@@ -1,0 +1,22 @@
+node_modules
+dist
+docs
+deploy
+backend/.venv
+backend/.pytest_cache
+backend/data
+backend/tests
+**/__pycache__
+*.db
+.env
+.git
+Campus Pilot
+Campus Pilot.xcodeproj
+build
+scripts
+.vite
+inbox-worker
+packaging
+backend/desktop
+backend/dist
+.github

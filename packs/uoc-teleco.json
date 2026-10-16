@@ -1,0 +1,761 @@
+{
+ "format": "campus-pilot-pack",
+ "format_version": 1,
+ "slug": "uoc-teleco",
+ "name": "UOC · Grado de Ingeniería de Tecnologías y Servicios de Telecomunicación",
+ "version": "2026.10.13",
+ "description": "Plan de estudios del Grado de Ingeniería de Tecnologías y Servicios de Telecomunicación de la UOC, según el documento «Recomendaciones de matrícula» (240 ECTS: 84 de formación básica, 72 obligatorios, 48 de una mención, 24 optativos y 12 del TFG), con el semestre en que se imparte cada asignatura y las dos menciones. El semestre del plan es el recomendado por ese documento (curso y orden de las flechas). Incluye el calendario 2026S1 de Matemáticas I y Fundamentos de programación con sus reglas de evaluación y su política de IA.",
+ "institution": "Universitat Oberta de Catalunya",
+ "degree": "Grado de Ingeniería de Tecnologías y Servicios de Telecomunicación",
+ "ects_total": 240,
+ "source_url": "https://www.uoc.edu/es/estudios/grados/grado-tecnologias-telecomunicacion",
+ "updated": "2026-10-12",
+ "authors": [
+  "Andrea Osma Rafael"
+ ],
+ "requirements": {
+  "basica": 84,
+  "obligatoria": 72,
+  "mencion": 48,
+  "optativa": 24,
+  "tfg": 12
+ },
+ "config": {
+  "grade_max": 10,
+  "pass_mark": 5,
+  "decimals": 2,
+  "credit_label": "ECTS",
+  "term_system": "semesters",
+  "year_start_month": 9,
+  "labels": {
+   "activity_kinds": {"pec": "PEC", "pr": "PR", "quiz": "Cuestionario", "video": "Vídeo de autoría", "exam": "Examen"},
+   "subject_kinds": {"basica": "Formación básica", "obligatoria": "Obligatoria", "optativa": "Optativa", "mencion": "Mención", "practicas": "Prácticas", "tfg": "TFG"},
+   "ec": "EC",
+   "pf": "PF"
+  }
+ },
+ "tracks": [
+  {
+   "id": "sistemas-telecomunicacion",
+   "name": "Mención en Sistemas de Telecomunicación"
+  },
+  {
+   "id": "sistemas-telematicos",
+   "name": "Mención en Sistemas Telemáticos"
+  }
+ ],
+ "subjects": [
+  {
+   "ref": "fc",
+   "name": "Fundamentos de computadores",
+   "ects": 6,
+   "kind": "obligatoria",
+   "plan_semester": 1,
+   "offered": "both"
+  },
+  {
+   "ref": "fp",
+   "name": "Fundamentos de programación",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 1,
+   "code": "75.554",
+   "ai_policy": "forbidden",
+   "ai_policy_note": "Página «Aspectos a tener en cuenta al resolver las actividades»: prohibida la IA en las actividades evaluables. Sanción: 0 en la actividad, posible suspenso de la asignatura y constancia en el expediente.",
+   "groups": [
+    {
+     "ref": "pec",
+     "name": "PEC",
+     "weight": 30,
+     "min_grade": 4
+    },
+    {
+     "ref": "pr",
+     "name": "PR",
+     "weight": 70,
+     "min_grade": 5
+    }
+   ],
+   "offered": "both"
+  },
+  {
+   "ref": "mat1",
+   "name": "Matemáticas I",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 1,
+   "code": "75.557",
+   "ai_policy": "forbidden",
+   "ai_policy_note": "Plan docente: la IA solo se puede usar donde lo indique cada actividad. Reto 1: «En esta actividad no está permitido el uso de herramientas de inteligencia artificial» (sanción D/0). Hay vídeos de comprobación de autoría por reto; aplica también a las justificaciones de los cuestionarios y al Reto 5 (PS).",
+   "eval_model": "ec_pf",
+   "eval_config": {
+    "ec_pass": 5,
+    "pf_min": 4,
+    "no_show_grade": 3
+   },
+   "groups": [
+    {
+     "ref": "ec",
+     "name": "EC",
+     "weight": 50,
+     "role": "ec"
+    },
+    {
+     "ref": "pf",
+     "name": "PF",
+     "weight": 50,
+     "min_grade": 4,
+     "role": "pf"
+    }
+   ],
+   "offered": "both"
+  },
+  {
+   "ref": "ctr",
+   "name": "Comunicación y trabajo en equipo en la red",
+   "ects": 6,
+   "kind": "obligatoria",
+   "plan_semester": 1,
+   "offered": "both"
+  },
+  {
+   "ref": "agor",
+   "name": "Administración y gestión de organizaciones",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 1,
+   "offered": "both"
+  },
+  {
+   "ref": "pp",
+   "name": "Prácticas de programación",
+   "ects": 6,
+   "kind": "obligatoria",
+   "plan_semester": 2,
+   "offered": "both"
+  },
+  {
+   "ref": "mat2",
+   "name": "Matemáticas II",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 2,
+   "offered": "both"
+  },
+  {
+   "ref": "ingles-b21",
+   "name": "Inglés B2.1",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 2,
+   "offered": "both"
+  },
+  {
+   "ref": "ingles-b22",
+   "name": "Inglés B2.2",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 2,
+   "offered": "both"
+  },
+  {
+   "ref": "bd",
+   "name": "Bases de datos",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 3,
+   "offered": "both"
+  },
+  {
+   "ref": "dpoo",
+   "name": "Diseño y programación orientada a objetos",
+   "ects": 6,
+   "kind": "obligatoria",
+   "plan_semester": 3,
+   "offered": "both"
+  },
+  {
+   "ref": "fis1",
+   "name": "Física I",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 3,
+   "offered": "s1"
+  },
+  {
+   "ref": "ss1",
+   "name": "Señales y sistemas I",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 3,
+   "offered": "s1"
+  },
+  {
+   "ref": "so",
+   "name": "Sistemas operativos",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 3,
+   "offered": "s1"
+  },
+  {
+   "ref": "circ-electronicos",
+   "name": "Circuitos electrónicos",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 3,
+   "offered": "s1"
+  },
+  {
+   "ref": "circuitos",
+   "name": "Teoría de circuitos",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 4,
+   "offered": "s2"
+  },
+  {
+   "ref": "mat-telecos",
+   "name": "Matemáticas para las telecomunicaciones",
+   "ects": 6,
+   "kind": "obligatoria",
+   "plan_semester": 4,
+   "offered": "s2"
+  },
+  {
+   "ref": "fis2",
+   "name": "Física II",
+   "ects": 6,
+   "kind": "obligatoria",
+   "plan_semester": 4,
+   "offered": "s2"
+  },
+  {
+   "ref": "ss2",
+   "name": "Señales y sistemas II",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 4,
+   "offered": "s2"
+  },
+  {
+   "ref": "telematica",
+   "name": "Telemática",
+   "ects": 6,
+   "kind": "obligatoria",
+   "plan_semester": 4,
+   "offered": "s2"
+  },
+  {
+   "ref": "sc1",
+   "name": "Sistemas de comunicación I",
+   "ects": 6,
+   "kind": "obligatoria",
+   "plan_semester": 5,
+   "offered": "s1"
+  },
+  {
+   "ref": "rys",
+   "name": "Redes y servicios",
+   "ects": 6,
+   "kind": "obligatoria",
+   "plan_semester": 5,
+   "offered": "both"
+  },
+  {
+   "ref": "gp",
+   "name": "Gestión de proyectos",
+   "ects": 6,
+   "kind": "basica",
+   "plan_semester": 5,
+   "offered": "s1"
+  },
+  {
+   "ref": "elec-digital",
+   "name": "Electrónica digital",
+   "ects": 6,
+   "kind": "obligatoria",
+   "plan_semester": 6,
+   "offered": "s2"
+  },
+  {
+   "ref": "elec-com",
+   "name": "Electrónica de comunicaciones",
+   "ects": 6,
+   "kind": "obligatoria",
+   "plan_semester": 6,
+   "offered": "s2"
+  },
+  {
+   "ref": "moviles",
+   "name": "Comunicaciones móviles",
+   "ects": 6,
+   "kind": "obligatoria",
+   "plan_semester": 6,
+   "offered": "both"
+  },
+  {
+   "ref": "sc2",
+   "name": "Sistemas de comunicación II",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telecomunicacion",
+   "plan_semester": 8,
+   "offered": "s2"
+  },
+  {
+   "ref": "codificacion",
+   "name": "Codificación y modulaciones avanzadas",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telecomunicacion",
+   "plan_semester": 7,
+   "offered": "s1"
+  },
+  {
+   "ref": "microondas",
+   "name": "Circuito de microondas",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telecomunicacion",
+   "plan_semester": 8,
+   "offered": "s2"
+  },
+  {
+   "ref": "antenas",
+   "name": "Antenas",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telecomunicacion",
+   "plan_semester": 7,
+   "offered": "s1"
+  },
+  {
+   "ref": "audio",
+   "name": "Procesado de audio",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telecomunicacion",
+   "plan_semester": 8,
+   "offered": "s2"
+  },
+  {
+   "ref": "imagen",
+   "name": "Procesado de imagen",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telecomunicacion",
+   "plan_semester": 7,
+   "offered": "s1"
+  },
+  {
+   "ref": "radiodifusion",
+   "name": "Redes de difusión y distribución",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telecomunicacion",
+   "plan_semester": 8,
+   "offered": "s2"
+  },
+  {
+   "ref": "fibra",
+   "name": "Redes de fibra óptica",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telecomunicacion",
+   "plan_semester": 7,
+   "offered": "s1"
+  },
+  {
+   "ref": "seguridad",
+   "name": "Seguridad en redes",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telematicos",
+   "plan_semester": 7,
+   "offered": "s1"
+  },
+  {
+   "ref": "internet",
+   "name": "Sistemas de Internet",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telematicos",
+   "plan_semester": 7,
+   "offered": "s1"
+  },
+  {
+   "ref": "distribuidos",
+   "name": "Sistemas distribuidos",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telematicos",
+   "plan_semester": 7,
+   "offered": "s1"
+  },
+  {
+   "ref": "transporte",
+   "name": "Telecomunicación en el sector transporte",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telematicos",
+   "plan_semester": 7
+  },
+  {
+   "ref": "gestion-redes",
+   "name": "Control y gestión de redes",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telematicos",
+   "plan_semester": 7,
+   "offered": "s1"
+  },
+  {
+   "ref": "diseno-redes",
+   "name": "Diseño de redes telemáticas",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telematicos",
+   "plan_semester": 7,
+   "offered": "s1"
+  },
+  {
+   "ref": "automatizacion",
+   "name": "Automatización de redes y redes deterministas",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telematicos",
+   "plan_semester": 7,
+   "offered": "s1"
+  },
+  {
+   "ref": "iot",
+   "name": "Internet de las cosas (IoT)",
+   "ects": 6,
+   "kind": "mencion",
+   "track": "sistemas-telematicos",
+   "plan_semester": 7,
+   "offered": "s1"
+  },
+  {
+   "ref": "multimedia",
+   "name": "Aplicaciones y servicios multimedia",
+   "ects": 6,
+   "kind": "optativa",
+   "plan_semester": 7,
+   "offered": "s1"
+  },
+  {
+   "ref": "sig",
+   "name": "SIG y geotelemática",
+   "ects": 6,
+   "kind": "optativa",
+   "plan_semester": 8,
+   "offered": "s2"
+  },
+  {
+   "ref": "practicas",
+   "name": "Prácticas en empresa",
+   "ects": 12,
+   "kind": "optativa",
+   "plan_semester": 8,
+   "offered": "both"
+  },
+  {
+   "ref": "tfg",
+   "name": "Trabajo final de grado",
+   "ects": 12,
+   "kind": "tfg",
+   "plan_semester": 8,
+   "offered": "both"
+  }
+ ],
+ "terms": [
+  {
+   "ref": "2026s1",
+   "label": "2026S1",
+   "start_date": "2026-09-23",
+   "end_date": "2027-02-03",
+   "subjects": [
+    "mat1",
+    "fp"
+   ],
+   "activities": [
+    {
+     "ref": "fp-pec1",
+     "subject": "fp",
+     "name": "PEC 1",
+     "kind": "pec",
+     "weight": 1,
+     "evaluable": true,
+     "group": "pec",
+     "due_date": "2026-10-07",
+     "due_time": "23:59",
+     "notes": "Se abre una semana antes. Fuera de plazo = D(0)."
+    },
+    {
+     "ref": "fp-pec2",
+     "subject": "fp",
+     "name": "PEC 2",
+     "kind": "pec",
+     "weight": 1,
+     "evaluable": true,
+     "group": "pec",
+     "due_date": "2026-10-14",
+     "due_time": "23:59",
+     "notes": "Se abre una semana antes. Fuera de plazo = D(0)."
+    },
+    {
+     "ref": "fp-pec3",
+     "subject": "fp",
+     "name": "PEC 3",
+     "kind": "pec",
+     "weight": 1,
+     "evaluable": true,
+     "group": "pec",
+     "due_date": "2026-10-21",
+     "due_time": "23:59",
+     "notes": "Se abre una semana antes. Fuera de plazo = D(0)."
+    },
+    {
+     "ref": "fp-pec4",
+     "subject": "fp",
+     "name": "PEC 4",
+     "kind": "pec",
+     "weight": 1,
+     "evaluable": true,
+     "group": "pec",
+     "due_date": "2026-11-11",
+     "due_time": "23:59",
+     "notes": "Se abre una semana antes. Fuera de plazo = D(0)."
+    },
+    {
+     "ref": "fp-pec5",
+     "subject": "fp",
+     "name": "PEC 5",
+     "kind": "pec",
+     "weight": 1,
+     "evaluable": true,
+     "group": "pec",
+     "due_date": "2026-12-02",
+     "due_time": "23:59",
+     "notes": "Se abre una semana antes. Fuera de plazo = D(0)."
+    },
+    {
+     "ref": "fp-pec6",
+     "subject": "fp",
+     "name": "PEC 6",
+     "kind": "pec",
+     "weight": 1,
+     "evaluable": true,
+     "group": "pec",
+     "due_date": "2027-01-10",
+     "due_time": "23:59",
+     "notes": "Cuestionario."
+    },
+    {
+     "ref": "fp-pr1",
+     "subject": "fp",
+     "name": "PR 1",
+     "kind": "pr",
+     "weight": 1,
+     "evaluable": true,
+     "group": "pr",
+     "due_date": "2026-11-04",
+     "due_time": "23:59",
+     "notes": "Algoritmo + programa C + vídeo. Obligatorio entregar las 3 PR. Se abre 2–3 semanas antes."
+    },
+    {
+     "ref": "fp-pr2",
+     "subject": "fp",
+     "name": "PR 2",
+     "kind": "pr",
+     "weight": 1,
+     "evaluable": true,
+     "group": "pr",
+     "due_date": "2026-11-25",
+     "due_time": "23:59",
+     "notes": "Algoritmo + programa C + vídeo. Obligatorio entregar las 3 PR. Se abre 2–3 semanas antes."
+    },
+    {
+     "ref": "fp-pr3",
+     "subject": "fp",
+     "name": "PR 3",
+     "kind": "pr",
+     "weight": 1,
+     "evaluable": true,
+     "group": "pr",
+     "due_date": "2026-12-23",
+     "due_time": "23:59",
+     "notes": "Algoritmo + programa C + vídeo. Obligatorio entregar las 3 PR. Se abre 2–3 semanas antes."
+    },
+    {
+     "ref": "mat-c1",
+     "subject": "mat1",
+     "name": "Cuestionario 1 (Reto 1)",
+     "kind": "quiz",
+     "weight": 0,
+     "evaluable": true,
+     "group": "ec",
+     "due_date": "2026-10-02",
+     "due_time": "23:59",
+     "notes": "2 intentos, cuenta el mejor; pulsar «Enviar». Resolver en papel y guardar las justificaciones."
+    },
+    {
+     "ref": "mat-c2-5",
+     "subject": "mat1",
+     "name": "Cuestionarios 2, 3, 4 y 5 (Reto 2)",
+     "kind": "quiz",
+     "weight": 0,
+     "evaluable": true,
+     "group": "ec",
+     "due_date": "2026-10-30",
+     "due_time": "23:59",
+     "notes": "Son cuatro: no dejarlos al final."
+    },
+    {
+     "ref": "mat-c6-7",
+     "subject": "mat1",
+     "name": "Cuestionarios 6 y 7 (Reto 3)",
+     "kind": "quiz",
+     "weight": 0,
+     "evaluable": true,
+     "group": "ec",
+     "due_date": "2026-11-20",
+     "due_time": "23:59"
+    },
+    {
+     "ref": "mat-c8-11",
+     "subject": "mat1",
+     "name": "Cuestionarios 8, 9, 10 y 11 (Reto 4)",
+     "kind": "quiz",
+     "weight": 0,
+     "evaluable": true,
+     "group": "ec",
+     "due_date": "2026-12-11",
+     "due_time": "23:59"
+    },
+    {
+     "ref": "mat-r5-ps",
+     "subject": "mat1",
+     "name": "Reto 5 (PS): ejercicios a mano",
+     "kind": "pec",
+     "weight": 0,
+     "evaluable": true,
+     "group": "ec",
+     "due_date": "2026-12-22",
+     "due_time": "23:59",
+     "window_start": "2026-12-10",
+     "window_end": "2026-12-22"
+    },
+    {
+     "ref": "mat-video-r1",
+     "subject": "mat1",
+     "name": "Vídeo R1 (nota del Reto 1)",
+     "kind": "video",
+     "weight": 1,
+     "evaluable": true,
+     "group": "ec",
+     "window_start": "2026-10-08",
+     "window_end": "2026-10-11",
+     "notes": "Comprobación de identidad y autoría: 15 min al abrir. Preguntan por tus respuestas: sin justificaciones se suspende el reto."
+    },
+    {
+     "ref": "mat-video-r2",
+     "subject": "mat1",
+     "name": "Vídeo R2 (nota del Reto 2)",
+     "kind": "video",
+     "weight": 1,
+     "evaluable": true,
+     "group": "ec",
+     "window_start": "2026-11-05",
+     "window_end": "2026-11-08",
+     "notes": "Comprobación de identidad y autoría: 15 min al abrir. Preguntan por tus respuestas: sin justificaciones se suspende el reto."
+    },
+    {
+     "ref": "mat-video-r3",
+     "subject": "mat1",
+     "name": "Vídeo R3 (nota del Reto 3)",
+     "kind": "video",
+     "weight": 1,
+     "evaluable": true,
+     "group": "ec",
+     "window_start": "2026-11-26",
+     "window_end": "2026-11-29",
+     "notes": "Comprobación de identidad y autoría: 15 min al abrir. Preguntan por tus respuestas: sin justificaciones se suspende el reto."
+    },
+    {
+     "ref": "mat-video-r4",
+     "subject": "mat1",
+     "name": "Vídeo R4 (nota del Reto 4)",
+     "kind": "video",
+     "weight": 1,
+     "evaluable": true,
+     "group": "ec",
+     "window_start": "2026-12-17",
+     "window_end": "2026-12-20",
+     "notes": "Comprobación de identidad y autoría: 15 min al abrir. Preguntan por tus respuestas: sin justificaciones se suspende el reto."
+    },
+    {
+     "ref": "mat-video-r5",
+     "subject": "mat1",
+     "name": "Vídeo R5 (nota del Reto 5)",
+     "kind": "video",
+     "weight": 1,
+     "evaluable": true,
+     "group": "ec",
+     "window_start": "2027-01-04",
+     "window_end": "2027-01-09",
+     "notes": "Comprobación de identidad y autoría: 15 min al abrir. Preguntan por tus respuestas: sin justificaciones se suspende el reto."
+    }
+   ],
+   "events": [
+    {
+     "ref": "fp-sesion1",
+     "subject": "fp",
+     "title": "Sesión síncrona #1",
+     "kind": "session",
+     "date": "2026-09-28",
+     "start_time": "19:00",
+     "end_time": "21:00",
+     "notes": "Opcional; la grabación sale en el aula."
+    },
+    {
+     "ref": "fp-sesion2",
+     "subject": "fp",
+     "title": "Sesión síncrona #2",
+     "kind": "session",
+     "date": "2026-11-16",
+     "start_time": "19:00",
+     "end_time": "21:00"
+    }
+   ],
+   "habits": [
+    {
+     "ref": "mat-ges",
+     "subject": "mat1",
+     "title": "GES (guía semanal) de Matemáticas I",
+     "weekdays": [
+      6
+     ]
+    }
+   ],
+   "procedures": [
+    {
+     "ref": "eep-documentacion",
+     "title": "EEP: introducir estudios previos y documentación",
+     "category": "recognition",
+     "deadline": "2026-11-04",
+     "notes": "Evaluación de estudios previos (si te afecta)."
+    },
+    {
+     "ref": "eep-solicitud",
+     "title": "EEP: plazo de solicitud",
+     "category": "recognition",
+     "window_start": "2026-11-30",
+     "deadline": "2026-12-15"
+    }
+   ]
+  }
+ ]
+}

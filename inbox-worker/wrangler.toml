@@ -1,0 +1,20 @@
+# Worker de la Bandeja de la universidad (Campus Pilot). Ver README.md.
+name = "campus-pilot-inbox"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[vars]
+# Dominios de remitente de sobre admitidos, separados por comas. El reenvío automático de
+# Gmail conserva el dominio del buzón universitario como remitente de sobre.
+ALLOWED_FROM_DOMAINS = "tu-universidad.edu"
+# Opcional: dirección verificada en Email Routing a la que van la verificación del reenvío de
+# Gmail y lo que no se pueda guardar. Vacía = se rechaza (no se pierde en silencio).
+FALLBACK_FORWARD = ""
+
+# Crea el espacio con `npx wrangler kv namespace create INBOX` y pega aquí su id.
+[[kv_namespaces]]
+binding = "INBOX"
+id = "PEGA_AQUI_EL_ID_DEL_NAMESPACE"
+
+# Secreto (nunca aquí): `npx wrangler secret put PULL_TOKEN`

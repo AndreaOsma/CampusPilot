@@ -1,0 +1,1001 @@
+{
+ "$defs": {
+  "CareerConfig": {
+   "properties": {
+    "grade_max": {
+     "default": 10,
+     "exclusiveMinimum": 0,
+     "maximum": 100,
+     "title": "Grade Max",
+     "type": "number"
+    },
+    "pass_mark": {
+     "default": 5,
+     "maximum": 100,
+     "minimum": 0,
+     "title": "Pass Mark",
+     "type": "number"
+    },
+    "decimals": {
+     "default": 2,
+     "maximum": 3,
+     "minimum": 0,
+     "title": "Decimals",
+     "type": "integer"
+    },
+    "credit_label": {
+     "default": "ECTS",
+     "maxLength": 20,
+     "minLength": 1,
+     "title": "Credit Label",
+     "type": "string"
+    },
+    "term_system": {
+     "default": "semesters",
+     "enum": [
+      "semesters",
+      "trimesters",
+      "quarters",
+      "annual"
+     ],
+     "title": "Term System",
+     "type": "string"
+    },
+    "year_start_month": {
+     "default": 9,
+     "maximum": 12,
+     "minimum": 1,
+     "title": "Year Start Month",
+     "type": "integer"
+    },
+    "labels": {
+     "$ref": "#/$defs/CareerLabels"
+    },
+    "letters": {
+     "items": {
+      "$ref": "#/$defs/GradeLetter"
+     },
+     "maxItems": 15,
+     "title": "Letters",
+     "type": "array"
+    }
+   },
+   "title": "CareerConfig",
+   "type": "object"
+  },
+  "CareerLabels": {
+   "description": "Cómo llama tu universidad a cada cosa (vacío = nombre genérico).",
+   "properties": {
+    "subject_kinds": {
+     "additionalProperties": {
+      "maxLength": 40,
+      "minLength": 1,
+      "type": "string"
+     },
+     "propertyNames": {
+      "enum": [
+       "basica",
+       "obligatoria",
+       "optativa",
+       "mencion",
+       "practicas",
+       "tfg",
+       "otra"
+      ]
+     },
+     "title": "Subject Kinds",
+     "type": "object"
+    },
+    "activity_kinds": {
+     "additionalProperties": {
+      "maxLength": 40,
+      "minLength": 1,
+      "type": "string"
+     },
+     "propertyNames": {
+      "enum": [
+       "pec",
+       "pr",
+       "quiz",
+       "video",
+       "exam",
+       "lab",
+       "project",
+       "other"
+      ]
+     },
+     "title": "Activity Kinds",
+     "type": "object"
+    },
+    "ec": {
+     "default": "",
+     "maxLength": 40,
+     "title": "Ec",
+     "type": "string"
+    },
+    "pf": {
+     "default": "",
+     "maxLength": 40,
+     "title": "Pf",
+     "type": "string"
+    }
+   },
+   "title": "CareerLabels",
+   "type": "object"
+  },
+  "EvalConfig": {
+   "properties": {
+    "ec_pass": {
+     "default": 5,
+     "maximum": 100,
+     "minimum": 0,
+     "title": "Ec Pass",
+     "type": "number"
+    },
+    "pf_min": {
+     "default": 4,
+     "maximum": 100,
+     "minimum": 0,
+     "title": "Pf Min",
+     "type": "number"
+    },
+    "no_show_grade": {
+     "default": 3,
+     "maximum": 100,
+     "minimum": 0,
+     "title": "No Show Grade",
+     "type": "number"
+    }
+   },
+   "title": "EvalConfig",
+   "type": "object"
+  },
+  "GradeLetter": {
+   "description": "Una letra de la escala (A, B, C+…, o SB/NT/AP/SS): desde `min` (incluido); al\napuntar la nota con la letra se guarda `value`.",
+   "properties": {
+    "label": {
+     "maxLength": 12,
+     "minLength": 1,
+     "title": "Label",
+     "type": "string"
+    },
+    "min": {
+     "maximum": 100,
+     "minimum": 0,
+     "title": "Min",
+     "type": "number"
+    },
+    "value": {
+     "maximum": 100,
+     "minimum": 0,
+     "title": "Value",
+     "type": "number"
+    }
+   },
+   "required": [
+    "label",
+    "min",
+    "value"
+   ],
+   "title": "GradeLetter",
+   "type": "object"
+  },
+  "LinkItem": {
+   "properties": {
+    "label": {
+     "maxLength": 80,
+     "minLength": 1,
+     "title": "Label",
+     "type": "string"
+    },
+    "url": {
+     "maxLength": 500,
+     "minLength": 1,
+     "title": "Url",
+     "type": "string"
+    }
+   },
+   "required": [
+    "label",
+    "url"
+   ],
+   "title": "LinkItem",
+   "type": "object"
+  },
+  "PackActivity": {
+   "properties": {
+    "ref": {
+     "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+     "title": "Ref",
+     "type": "string"
+    },
+    "subject": {
+     "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+     "title": "Subject",
+     "type": "string"
+    },
+    "group": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Group"
+    },
+    "name": {
+     "maxLength": 160,
+     "minLength": 1,
+     "title": "Name",
+     "type": "string"
+    },
+    "kind": {
+     "default": "other",
+     "enum": [
+      "pec",
+      "pr",
+      "quiz",
+      "video",
+      "exam",
+      "lab",
+      "project",
+      "other"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "weight": {
+     "default": 1,
+     "maximum": 100,
+     "minimum": 0,
+     "title": "Weight",
+     "type": "number"
+    },
+    "due_date": {
+     "anyOf": [
+      {
+       "format": "date",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Due Date"
+    },
+    "due_time": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Due Time"
+    },
+    "window_start": {
+     "anyOf": [
+      {
+       "format": "date",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Window Start"
+    },
+    "window_end": {
+     "anyOf": [
+      {
+       "format": "date",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Window End"
+    },
+    "evaluable": {
+     "default": true,
+     "title": "Evaluable",
+     "type": "boolean"
+    },
+    "estimated_hours": {
+     "anyOf": [
+      {
+       "maximum": 500,
+       "minimum": 0,
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Estimated Hours"
+    },
+    "notes": {
+     "default": "",
+     "maxLength": 2000,
+     "title": "Notes",
+     "type": "string"
+    }
+   },
+   "required": [
+    "ref",
+    "subject",
+    "name"
+   ],
+   "title": "PackActivity",
+   "type": "object"
+  },
+  "PackEvent": {
+   "properties": {
+    "ref": {
+     "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+     "title": "Ref",
+     "type": "string"
+    },
+    "subject": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Subject"
+    },
+    "title": {
+     "maxLength": 200,
+     "minLength": 1,
+     "title": "Title",
+     "type": "string"
+    },
+    "kind": {
+     "default": "other",
+     "enum": [
+      "session",
+      "class",
+      "exam",
+      "admin",
+      "personal",
+      "other"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "date": {
+     "format": "date",
+     "title": "Date",
+     "type": "string"
+    },
+    "end_date": {
+     "anyOf": [
+      {
+       "format": "date",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "End Date"
+    },
+    "start_time": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Start Time"
+    },
+    "end_time": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "End Time"
+    },
+    "url": {
+     "default": "",
+     "maxLength": 500,
+     "title": "Url",
+     "type": "string"
+    },
+    "notes": {
+     "default": "",
+     "maxLength": 2000,
+     "title": "Notes",
+     "type": "string"
+    }
+   },
+   "required": [
+    "ref",
+    "title",
+    "date"
+   ],
+   "title": "PackEvent",
+   "type": "object"
+  },
+  "PackGroup": {
+   "properties": {
+    "ref": {
+     "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+     "title": "Ref",
+     "type": "string"
+    },
+    "name": {
+     "maxLength": 80,
+     "minLength": 1,
+     "title": "Name",
+     "type": "string"
+    },
+    "weight": {
+     "maximum": 100,
+     "minimum": 0,
+     "title": "Weight",
+     "type": "number"
+    },
+    "min_grade": {
+     "anyOf": [
+      {
+       "maximum": 100,
+       "minimum": 0,
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Min Grade"
+    },
+    "role": {
+     "anyOf": [
+      {
+       "enum": [
+        "ec",
+        "pf"
+       ],
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Role"
+    }
+   },
+   "required": [
+    "ref",
+    "name",
+    "weight"
+   ],
+   "title": "PackGroup",
+   "type": "object"
+  },
+  "PackHabit": {
+   "properties": {
+    "ref": {
+     "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+     "title": "Ref",
+     "type": "string"
+    },
+    "subject": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Subject"
+    },
+    "title": {
+     "maxLength": 200,
+     "minLength": 1,
+     "title": "Title",
+     "type": "string"
+    },
+    "weekdays": {
+     "items": {
+      "type": "integer"
+     },
+     "maxItems": 7,
+     "title": "Weekdays",
+     "type": "array"
+    }
+   },
+   "required": [
+    "ref",
+    "title"
+   ],
+   "title": "PackHabit",
+   "type": "object"
+  },
+  "PackProcedure": {
+   "properties": {
+    "ref": {
+     "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+     "title": "Ref",
+     "type": "string"
+    },
+    "title": {
+     "maxLength": 200,
+     "minLength": 1,
+     "title": "Title",
+     "type": "string"
+    },
+    "category": {
+     "default": "admin",
+     "enum": [
+      "enrollment",
+      "recognition",
+      "scholarship",
+      "internship",
+      "tfg",
+      "admin",
+      "other"
+     ],
+     "title": "Category",
+     "type": "string"
+    },
+    "window_start": {
+     "anyOf": [
+      {
+       "format": "date",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Window Start"
+    },
+    "deadline": {
+     "anyOf": [
+      {
+       "format": "date",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Deadline"
+    },
+    "url": {
+     "default": "",
+     "maxLength": 500,
+     "title": "Url",
+     "type": "string"
+    },
+    "notes": {
+     "default": "",
+     "maxLength": 2000,
+     "title": "Notes",
+     "type": "string"
+    }
+   },
+   "required": [
+    "ref",
+    "title"
+   ],
+   "title": "PackProcedure",
+   "type": "object"
+  },
+  "PackSubject": {
+   "properties": {
+    "ref": {
+     "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+     "title": "Ref",
+     "type": "string"
+    },
+    "code": {
+     "default": "",
+     "maxLength": 32,
+     "title": "Code",
+     "type": "string"
+    },
+    "name": {
+     "maxLength": 200,
+     "minLength": 1,
+     "title": "Name",
+     "type": "string"
+    },
+    "ects": {
+     "exclusiveMinimum": 0,
+     "maximum": 60,
+     "title": "Ects",
+     "type": "number"
+    },
+    "kind": {
+     "default": "obligatoria",
+     "enum": [
+      "basica",
+      "obligatoria",
+      "optativa",
+      "mencion",
+      "practicas",
+      "tfg",
+      "otra"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "plan_semester": {
+     "anyOf": [
+      {
+       "maximum": 20,
+       "minimum": 1,
+       "type": "integer"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Plan Semester"
+    },
+    "offered": {
+     "anyOf": [
+      {
+       "enum": [
+        "both",
+        "s1",
+        "s2",
+        "t1",
+        "t2",
+        "t3",
+        "q1",
+        "q2",
+        "q3",
+        "q4"
+       ],
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Offered"
+    },
+    "track": {
+     "anyOf": [
+      {
+       "maxLength": 64,
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Track"
+    },
+    "ai_policy": {
+     "default": "unknown",
+     "enum": [
+      "unknown",
+      "allowed",
+      "limited",
+      "forbidden"
+     ],
+     "title": "Ai Policy",
+     "type": "string"
+    },
+    "ai_policy_note": {
+     "default": "",
+     "maxLength": 2000,
+     "title": "Ai Policy Note",
+     "type": "string"
+    },
+    "eval_model": {
+     "default": "weighted",
+     "enum": [
+      "weighted",
+      "ec_pf"
+     ],
+     "title": "Eval Model",
+     "type": "string"
+    },
+    "eval_config": {
+     "$ref": "#/$defs/EvalConfig"
+    },
+    "groups": {
+     "items": {
+      "$ref": "#/$defs/PackGroup"
+     },
+     "maxItems": 20,
+     "title": "Groups",
+     "type": "array"
+    },
+    "links": {
+     "items": {
+      "$ref": "#/$defs/LinkItem"
+     },
+     "maxItems": 20,
+     "title": "Links",
+     "type": "array"
+    }
+   },
+   "required": [
+    "ref",
+    "name",
+    "ects"
+   ],
+   "title": "PackSubject",
+   "type": "object"
+  },
+  "PackTerm": {
+   "properties": {
+    "ref": {
+     "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+     "title": "Ref",
+     "type": "string"
+    },
+    "label": {
+     "maxLength": 40,
+     "minLength": 1,
+     "title": "Label",
+     "type": "string"
+    },
+    "start_date": {
+     "format": "date",
+     "title": "Start Date",
+     "type": "string"
+    },
+    "end_date": {
+     "anyOf": [
+      {
+       "format": "date",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "End Date"
+    },
+    "subjects": {
+     "items": {
+      "type": "string"
+     },
+     "maxItems": 40,
+     "title": "Subjects",
+     "type": "array"
+    },
+    "activities": {
+     "items": {
+      "$ref": "#/$defs/PackActivity"
+     },
+     "maxItems": 1000,
+     "title": "Activities",
+     "type": "array"
+    },
+    "events": {
+     "items": {
+      "$ref": "#/$defs/PackEvent"
+     },
+     "maxItems": 500,
+     "title": "Events",
+     "type": "array"
+    },
+    "habits": {
+     "items": {
+      "$ref": "#/$defs/PackHabit"
+     },
+     "maxItems": 50,
+     "title": "Habits",
+     "type": "array"
+    },
+    "procedures": {
+     "items": {
+      "$ref": "#/$defs/PackProcedure"
+     },
+     "maxItems": 100,
+     "title": "Procedures",
+     "type": "array"
+    }
+   },
+   "required": [
+    "ref",
+    "label",
+    "start_date"
+   ],
+   "title": "PackTerm",
+   "type": "object"
+  },
+  "TrackDef": {
+   "properties": {
+    "id": {
+     "maxLength": 64,
+     "minLength": 1,
+     "title": "Id",
+     "type": "string"
+    },
+    "name": {
+     "maxLength": 200,
+     "minLength": 1,
+     "title": "Name",
+     "type": "string"
+    }
+   },
+   "required": [
+    "id",
+    "name"
+   ],
+   "title": "TrackDef",
+   "type": "object"
+  }
+ },
+ "properties": {
+  "format": {
+   "const": "campus-pilot-pack",
+   "title": "Format",
+   "type": "string"
+  },
+  "format_version": {
+   "const": 1,
+   "title": "Format Version",
+   "type": "integer"
+  },
+  "slug": {
+   "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+   "title": "Slug",
+   "type": "string"
+  },
+  "name": {
+   "maxLength": 200,
+   "minLength": 1,
+   "title": "Name",
+   "type": "string"
+  },
+  "version": {
+   "default": "1",
+   "maxLength": 32,
+   "title": "Version",
+   "type": "string"
+  },
+  "description": {
+   "default": "",
+   "maxLength": 4000,
+   "title": "Description",
+   "type": "string"
+  },
+  "institution": {
+   "default": "",
+   "maxLength": 200,
+   "title": "Institution",
+   "type": "string"
+  },
+  "degree": {
+   "default": "",
+   "maxLength": 200,
+   "title": "Degree",
+   "type": "string"
+  },
+  "ects_total": {
+   "default": 240,
+   "maximum": 1000,
+   "minimum": 1,
+   "title": "Ects Total",
+   "type": "integer"
+  },
+  "source_url": {
+   "default": "",
+   "maxLength": 500,
+   "title": "Source Url",
+   "type": "string"
+  },
+  "updated": {
+   "anyOf": [
+    {
+     "format": "date",
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Updated"
+  },
+  "authors": {
+   "items": {
+    "type": "string"
+   },
+   "maxItems": 20,
+   "title": "Authors",
+   "type": "array"
+  },
+  "requirements": {
+   "additionalProperties": {
+    "type": "number"
+   },
+   "title": "Requirements",
+   "type": "object"
+  },
+  "config": {
+   "anyOf": [
+    {
+     "$ref": "#/$defs/CareerConfig"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null
+  },
+  "tracks": {
+   "items": {
+    "$ref": "#/$defs/TrackDef"
+   },
+   "maxItems": 20,
+   "title": "Tracks",
+   "type": "array"
+  },
+  "subjects": {
+   "items": {
+    "$ref": "#/$defs/PackSubject"
+   },
+   "maxItems": 300,
+   "title": "Subjects",
+   "type": "array"
+  },
+  "terms": {
+   "items": {
+    "$ref": "#/$defs/PackTerm"
+   },
+   "maxItems": 40,
+   "title": "Terms",
+   "type": "array"
+  },
+  "procedures": {
+   "items": {
+    "$ref": "#/$defs/PackProcedure"
+   },
+   "maxItems": 100,
+   "title": "Procedures",
+   "type": "array"
+  }
+ },
+ "required": [
+  "format",
+  "format_version",
+  "slug",
+  "name"
+ ],
+ "title": "Pack",
+ "type": "object"
+}

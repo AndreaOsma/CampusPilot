@@ -1,0 +1,202 @@
+/* Common */
+"ui.common.add" = "Afegir";
+"ui.common.edit" = "Editar";
+"ui.common.delete" = "Eliminar";
+"ui.common.save" = "Desar";
+"ui.common.update" = "Actualitzar";
+"ui.common.cancel" = "Cancel·lar";
+"ui.common.close" = "Tancar";
+"ui.common.search" = "Buscar assignatura";
+"ui.common.status" = "Estat";
+"ui.common.name" = "Nom";
+"ui.common.type" = "Tipus";
+"ui.common.month" = "Mes";
+"ui.common.description" = "Descripció";
+"ui.common.summary" = "Resum";
+"ui.common.amount" = "Import";
+"ui.common.all" = "Tot";
+"ui.common.none" = "Cap";
+"ui.common.done" = "Fet";
+"ui.common.pending" = "Pendent";
+"ui.common.achieved" = "Assolit";
+"ui.common.completed" = "Finalitzada";
+"ui.common.high" = "Alt";
+"ui.common.medium" = "Mitjà";
+"ui.common.low" = "Baix";
+"ui.common.general" = "General";
+"ui.common.untitled" = "Sense títol";
+"ui.common.other" = "Altre";
+"ui.common.start" = "Inici";
+"ui.common.pause" = "Pausa";
+"ui.common.reset" = "Restablir";
+"ui.common.apply" = "Aplicar";
+"ui.common.yes" = "Sí";
+"ui.common.no" = "No";
+"ui.common.category" = "Categoria";
+"ui.common.percentage" = "Percentatge";
+"ui.common.price" = "Preu";
+"ui.common.total" = "Total";
+"ui.common.target" = "Objectiu";
+"ui.common.required" = "Necessari";
+"ui.common.impact" = "Impacte";
+"ui.common.unreachable" = "Inassolible";
+"ui.common.metrics" = "Mètriques";
+"ui.common.appearance" = "Aparença";
+"ui.common.theme" = "Tema";
+"ui.common.accent" = "Accent";
+"ui.common.system" = "Sistema";
+"ui.common.light" = "Clar";
+"ui.common.dark" = "Fosc";
+"ui.common.blue" = "Blau";
+"ui.common.green" = "Verd";
+"ui.common.orange" = "Taronja";
+"ui.common.pink" = "Rosa";
+"ui.common.purple" = "Lila";
+"ui.common.settings" = "Ajustos";
+"ui.common.hours" = "Hores";
+"ui.common.ok" = "Acceptar";
+"ui.common.import" = "Importar";
+"ui.common.plan" = "Planificació";
+"ui.common.label" = "Etiqueta";
+"ui.common.dashboard" = "Panell";
+"ui.common.startDate" = "Data d'inici";
+"ui.common.endDate" = "Data de fi";
+"ui.common.hoursWeek" = "h/setmana";
+"ui.common.quickView" = "Vista ràpida";
+"ui.common.advancedPanel" = "Panell avançat";
+"ui.common.add.ASubjectUsingTheButton" = "Afegeix una assignatura usant el botó";
+"ui.common.rangoDeFechas" = "Rang de dates";
+
+/* Career */
+"ui.career.title" = "La meva carrera";
+"ui.career.name" = "Nom de la carrera";
+"ui.career.new" = "Nova carrera";
+"ui.career.edit" = "Editar carrera";
+"ui.career.delete" = "Eliminar carrera";
+"ui.career.ects.goal" = "Objectiu ECTS";
+"ui.career.ects.target" = "Meta ECTS";
+"ui.career.ects.completed" = "ECTS completats";
+"ui.career.planner.title" = "Planificador";
+"ui.career.planner.desc" = "Un cop configurada la teva carrera i semestres, podràs planificar.";
+"ui.career.setup" = "Configuració inicial";
+"ui.career.settings.title" = "Ajustos de carrera";
+"ui.career.grades" = "Les meves notes";
+"ui.career.metrics.average" = "Nota mitjana";
+"ui.career.metrics.atRisk" = "En risc";
+"ui.career.restore" = "Restaurar carrera";
+
+/* Semester */
+"ui.semester.title" = "Semestre";
+"ui.semester.new" = "Nou semestre";
+"ui.semester.edit" = "Editar semestre";
+"ui.semester.delete" = "Eliminar semestre";
+"ui.semester.start" = "Data inici";
+"ui.semester.end" = "Data fi";
+"ui.semester.current" = "Semestre actual";
+"ui.semester.comparison" = "Comparativa";
+"ui.semester.closing" = "Tancament de semestre";
+"ui.semester.milestones" = "Fites del semestre";
+
+/* Subject */
+"ui.subject.title" = "Assignatura";
+"ui.subject.name" = "Nom assignatura";
+"ui.subject.new" = "Nova assignatura";
+"ui.subject.edit" = "Editar assignatura";
+"ui.subject.list" = "Assignatures";
+"ui.subject.details" = "Detall";
+"ui.subject.credits" = "Crèdits";
+"ui.subject.code" = "Codi (opcional)";
+"ui.subject.restore" = "Restaurar assignatura";
+"ui.subject.status.enrolled" = "Matriculada";
+"ui.subject.status.passed" = "Aprovada";
+"ui.subject.status.failed" = "Suspesa";
+"ui.subject.status.convalidated" = "Convalidada";
+"ui.subject.status.pending" = "Pendent";
+"ui.subject.status.inProgress" = "En progrés";
+"ui.subject.grade.estimated" = "Nota estimada";
+"ui.subject.grade.convalidated" = "Nota convalidada";
+"ui.subject.grade.semesterGradeExclConvalidated" = "Nota mitjana (excl. convalidades)";
+"ui.subject.evaluation.progress" = "Progrés avaluació";
+"ui.subject.evaluation.blocks" = "Blocs avaluació";
+"ui.subject.activity" = "Activitat";
+"ui.subject.block" = "Bloc";
+
+/* Simulation */
+"ui.sim.title" = "Anàlisi i simulació";
+"ui.sim.quick" = "Simulador ràpid";
+"ui.sim.target" = "Nota final objectiu";
+"ui.sim.required" = "Nota necessària";
+"ui.sim.mode.title" = "Mode";
+"ui.sim.mode.split" = "Repartir en ambdues";
+"ui.sim.mode.fixFirst" = "Fixar 1a, calcular 2a";
+"ui.sim.impact" = "Impacte nota";
+"ui.sim.unreachable" = "Inassolible (>10)";
+"ui.sim.scenarios" = "Escenaris desats";
+"ui.sim.save" = "Desar escenari";
+"ui.sim.compare" = "Comparar escenaris";
+
+/* Planner */
+"ui.planner.agenda" = "Agenda diària";
+"ui.planner.workload" = "Càrrega setmanal estimada";
+"ui.planner.studyStreak" = "Ratxa d'estudi";
+"ui.planner.weeklyGoals" = "Objectius setmanals";
+"ui.planner.focus" = "Mode concentració";
+"ui.planner.trash" = "Paperera (30 dies)";
+"ui.planner.monthly.summary" = "Resum mensual";
+"ui.planner.progress.report" = "Informe progrés";
+"ui.planner.upcoming" = "Entrega propera";
+"ui.planner.studyModes" = "Modes d'estudi";
+
+/* Finance */
+"ui.finance.title" = "Finances";
+"ui.finance.price" = "Preu";
+"ui.finance.pricePerCredit" = "Preu/crèdit";
+"ui.finance.extraCost" = "Cost extra";
+"ui.finance.extraCosts" = "Costos extra";
+"ui.finance.semesterCost" = "Cost del semestre";
+"ui.finance.total" = "Total";
+"ui.finance.summary.total" = "Cost total carrera";
+"ui.finance.summary.average" = "Preu mitjà/ECTS";
+
+/* MEC Scholarship */
+"ui.mec.title" = "Beca MEC";
+"ui.mec.academicYear" = "Curs acadèmic";
+"ui.mec.eligibility" = "Seguiment beca";
+"ui.mec.verdict" = "Veredicte";
+"ui.mec.eligible" = "Apta";
+"ui.mec.atRisk" = "En risc";
+"ui.mec.notEligible" = "No apta";
+"ui.mec.minECTS" = "ECTS mín. mat.";
+"ui.mec.minPass" = "Superació mín.";
+"ui.mec.minGrade" = "Nota mitjana mín.";
+
+/* Form & UI */
+"ui.form.general" = "Dades generals";
+"ui.form.evaluation" = "Blocs d'avaluació";
+"ui.form.objectives" = "Objectius aprenentatge";
+"ui.form.diagnostics" = "Diagnòstic regles";
+"ui.form.placeholder.block" = "Nom bloc (ex. PAC)";
+"ui.form.placeholder.activity" = "Exemple: PAC 1";
+
+/* Alerts & Messages */
+"ui.alert.error" = "Error";
+"ui.alert.success" = "Èxit";
+"ui.alert.warning" = "Avís";
+"ui.alert.couldNotSave" = "No s'ha pogut desar";
+"ui.alert.checkInput" = "Revisa les dades i torna-ho a intentar.";
+"ui.alert.deleteConfirm" = "Aquesta acció no es pot desfer.";
+"ui.alert.weeklyWorkloadAlertThreshold" = "Llindar d'alerta de càrrega setmanal";
+
+/* Formats */
+"ui.format.credits" = "%d crèdits";
+"ui.format.grade" = "Nota: %.2f";
+"ui.format.percent" = "%.0f%%";
+"ui.format.hours" = "%.1f h";
+"ui.format.currency" = "%.2f €";
+"ui.format.week" = "Setmana %d";
+"ui.format.attempt" = "Intent #%d";
+"ui.format.subject" = "Assignatura: %@";
+"ui.format.status" = "Estat: %@";
+"ui.format.grade2f" = "%.2f";
+"ui.format.percentValue" = "%@%%";
+"ui.format.progress" = "Progrés: %@ (%d/%d activitats)";

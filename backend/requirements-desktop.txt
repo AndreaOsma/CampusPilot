@@ -1,0 +1,20 @@
+# Escritorio (Windows + macOS): lo de requirements.txt + PyInstaller y la ventana nativa.
+# uvicorn sin [standard]: uvloop/httptools no hacen falta para un solo usuario en local y
+# complican el empaquetado. backports.tarfile: el hook pkg_resources de PyInstaller lo pide
+# en Python < 3.12 (ver la nota en soberan/backend/requirements-desktop.txt).
+fastapi==0.141.1
+starlette==1.6.0
+uvicorn==0.34.0
+sqlalchemy==2.0.36
+alembic==1.14.0
+python-dotenv==1.2.2
+python-multipart==0.0.32
+httpx==0.28.1
+tzdata==2025.2
+pypdf==6.20.1
+anthropic==1.13.0
+cryptography==50.0.2
+backports.tarfile==1.2.0
+pyinstaller==6.11.1
+# Ventana nativa en vez del navegador: WebKit en macOS (PyObjC), WebView2 en Windows.
+pywebview==6.2.1

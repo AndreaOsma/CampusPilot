@@ -1,0 +1,40 @@
+# Local secrets
+.env
+.env.local
+ota-server/.env
+
+# Node
+node_modules/
+dist/
+ota-server/node_modules/
+# Xcode / macOS noise
+.DS_Store
+DerivedData/
+# Build artifacts
+ota-server/
+scripts/
+To-Do.md
+/.build
+/Packages
+xcuserdata/
+.swiftpm/configuration/registries.json
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.netrc
+# Private planning (local only; not published)
+PLAN.md
+build/
+.aider*
+# Web (Vite + FastAPI)
+*.db
+__pycache__/
+*.pyc
+.venv/
+backend/data/
+# Escritorio (PyInstaller / Inno Setup / .dmg)
+backend/desktop/
+backend/dist/
+packaging/out/
+# Caché de Vite y estado de Xcode por usuario
+.vite/
+xcuserdata/
+backend/.venv-desktop/

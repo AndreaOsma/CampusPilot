@@ -1,0 +1,16 @@
+{
+  "name": "campus-pilot-inbox",
+  "private": true,
+  "type": "module",
+  "description": "Bandeja de la universidad para Campus Pilot: recibe los correos reenviados (Email Routing), los guarda en KV y la app los recoge con un token.",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "test": "node --test test/index.test.js"
+  },
+  "dependencies": {
+    "postal-mime": "2.4.4"
+  },
+  "devDependencies": {
+    "wrangler": "4.42.0"
+  }
+}

@@ -1,0 +1,53 @@
+# Campus Pilot autoalojado: una sola imagen (SPA + API + SQLite).
+# Desde este directorio:
+#
+#   cp .env.example .env    # opcional: puerto, zona horaria, ntfy…
+#   docker compose up -d --build
+#
+# Abre http://127.0.0.1:${CAMPUS_HTTP_PORT:-8080}/
+#
+# La app NO tiene login propio: si la expones fuera de tu red, ponla detrás de un
+# proxy con autenticación (Authelia, Authentik, Cloudflare Access…) o de una VPN.
+
+services:
+  campus:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: ${CAMPUS_IMAGE:-campus:local}
+    # Sin root, sin capacidades y con el sistema de archivos de solo lectura salvo /data y /tmp.
+    user: "10001:10001"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    # Solo en este equipo por defecto: la app no tiene login. Para servirla a la red, pon
+    # CAMPUS_BIND=0.0.0.0 únicamente si delante hay un proxy con autenticación o una VPN.
+    ports:
+      - "${CAMPUS_BIND:-127.0.0.1}:${CAMPUS_HTTP_PORT:-8080}:8080"
+    environment:
+      CAMPUS_TZ: ${CAMPUS_TZ:-Europe/Madrid}
+      CAMPUS_NTFY_URL: ${CAMPUS_NTFY_URL:-}
+      CAMPUS_NTFY_TOKEN: ${CAMPUS_NTFY_TOKEN:-}
+      CAMPUS_PUBLIC_URL: ${CAMPUS_PUBLIC_URL:-}
+      CAMPUS_SCHEDULER: ${CAMPUS_SCHEDULER:-1}
+      CAMPUS_ICAL_TOKEN: ${CAMPUS_ICAL_TOKEN:-}
+      # Bandeja de la universidad (opcional, ver inbox-worker/).
+      CAMPUS_INBOX_PULL_URL: ${CAMPUS_INBOX_PULL_URL:-}
+      CAMPUS_INBOX_PULL_TOKEN: ${CAMPUS_INBOX_PULL_TOKEN:-}
+      # Clave para cifrar la clave de la IA (Ajustes → IA). Vacía = se genera en /data/secret.key.
+      CAMPUS_SECRET_KEY: ${CAMPUS_SECRET_KEY:-}
+    volumes:
+      - campus_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  campus_data:

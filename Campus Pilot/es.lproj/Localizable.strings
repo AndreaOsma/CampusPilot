@@ -1,0 +1,202 @@
+/* Common */
+"ui.common.add" = "Añadir";
+"ui.common.edit" = "Editar";
+"ui.common.delete" = "Eliminar";
+"ui.common.save" = "Guardar";
+"ui.common.update" = "Actualizar";
+"ui.common.cancel" = "Cancelar";
+"ui.common.close" = "Cerrar";
+"ui.common.search" = "Buscar asignatura";
+"ui.common.status" = "Estado";
+"ui.common.name" = "Nombre";
+"ui.common.type" = "Tipo";
+"ui.common.month" = "Mes";
+"ui.common.description" = "Descripción";
+"ui.common.summary" = "Resumen";
+"ui.common.amount" = "Importe";
+"ui.common.all" = "Todo";
+"ui.common.none" = "Ninguno";
+"ui.common.done" = "Hecho";
+"ui.common.pending" = "Pendiente";
+"ui.common.achieved" = "Alcanzado";
+"ui.common.completed" = "Finalizada";
+"ui.common.high" = "Alto";
+"ui.common.medium" = "Medio";
+"ui.common.low" = "Bajo";
+"ui.common.general" = "General";
+"ui.common.untitled" = "Sin título";
+"ui.common.other" = "Otro";
+"ui.common.start" = "Inicio";
+"ui.common.pause" = "Pausa";
+"ui.common.reset" = "Restablecer";
+"ui.common.apply" = "Aplicar";
+"ui.common.yes" = "Sí";
+"ui.common.no" = "No";
+"ui.common.category" = "Categoría";
+"ui.common.percentage" = "Porcentaje";
+"ui.common.price" = "Precio";
+"ui.common.total" = "Total";
+"ui.common.target" = "Objetivo";
+"ui.common.required" = "Necesario";
+"ui.common.impact" = "Impacto";
+"ui.common.unreachable" = "Inalcanzable";
+"ui.common.metrics" = "Métricas";
+"ui.common.appearance" = "Apariencia";
+"ui.common.theme" = "Tema";
+"ui.common.accent" = "Acento";
+"ui.common.system" = "Sistema";
+"ui.common.light" = "Claro";
+"ui.common.dark" = "Oscuro";
+"ui.common.blue" = "Azul";
+"ui.common.green" = "Verde";
+"ui.common.orange" = "Naranja";
+"ui.common.pink" = "Rosa";
+"ui.common.purple" = "Morado";
+"ui.common.settings" = "Ajustes";
+"ui.common.hours" = "Horas";
+"ui.common.ok" = "Aceptar";
+"ui.common.import" = "Importar";
+"ui.common.plan" = "Planificación";
+"ui.common.label" = "Etiqueta";
+"ui.common.dashboard" = "Panel";
+"ui.common.startDate" = "Fecha de inicio";
+"ui.common.endDate" = "Fecha de fin";
+"ui.common.hoursWeek" = "h/semana";
+"ui.common.quickView" = "Vista rápida";
+"ui.common.advancedPanel" = "Panel avanzado";
+"ui.common.add.ASubjectUsingTheButton" = "Añade una asignatura usando el botón";
+"ui.common.rangoDeFechas" = "Rango de fechas";
+
+/* Career */
+"ui.career.title" = "Mi carrera";
+"ui.career.name" = "Nombre de la carrera";
+"ui.career.new" = "Nueva carrera";
+"ui.career.edit" = "Editar carrera";
+"ui.career.delete" = "Eliminar carrera";
+"ui.career.ects.goal" = "Objetivo ECTS";
+"ui.career.ects.target" = "Meta ECTS";
+"ui.career.ects.completed" = "ECTS completados";
+"ui.career.planner.title" = "Planificador";
+"ui.career.planner.desc" = "Una vez configurada tu carrera y semestres, podrás planificar.";
+"ui.career.setup" = "Configuración inicial";
+"ui.career.settings.title" = "Ajustes de carrera";
+"ui.career.grades" = "Mis notas";
+"ui.career.metrics.average" = "Nota media";
+"ui.career.metrics.atRisk" = "En riesgo";
+"ui.career.restore" = "Restaurar carrera";
+
+/* Semester */
+"ui.semester.title" = "Semestre";
+"ui.semester.new" = "Nuevo semestre";
+"ui.semester.edit" = "Editar semestre";
+"ui.semester.delete" = "Eliminar semestre";
+"ui.semester.start" = "Fecha inicio";
+"ui.semester.end" = "Fecha fin";
+"ui.semester.current" = "Semestre actual";
+"ui.semester.comparison" = "Comparativa";
+"ui.semester.closing" = "Cierre de semestre";
+"ui.semester.milestones" = "Hitos del semestre";
+
+/* Subject */
+"ui.subject.title" = "Asignatura";
+"ui.subject.name" = "Nombre asignatura";
+"ui.subject.new" = "Nueva asignatura";
+"ui.subject.edit" = "Editar asignatura";
+"ui.subject.list" = "Asignaturas";
+"ui.subject.details" = "Detalle";
+"ui.subject.credits" = "Créditos";
+"ui.subject.code" = "Código (opcional)";
+"ui.subject.restore" = "Restaurar asignatura";
+"ui.subject.status.enrolled" = "Matriculada";
+"ui.subject.status.passed" = "Aprobada";
+"ui.subject.status.failed" = "Suspendida";
+"ui.subject.status.convalidated" = "Convalidada";
+"ui.subject.status.pending" = "Pendiente";
+"ui.subject.status.inProgress" = "En progreso";
+"ui.subject.grade.estimated" = "Nota estimada";
+"ui.subject.grade.convalidated" = "Nota convalidada";
+"ui.subject.grade.semesterGradeExclConvalidated" = "Nota media (excl. convalidadas)";
+"ui.subject.evaluation.progress" = "Progreso evaluación";
+"ui.subject.evaluation.blocks" = "Bloques evaluación";
+"ui.subject.activity" = "Actividad";
+"ui.subject.block" = "Bloque";
+
+/* Simulation */
+"ui.sim.title" = "Análisis y simulación";
+"ui.sim.quick" = "Simulador rápido";
+"ui.sim.target" = "Nota final objetivo";
+"ui.sim.required" = "Nota necesaria";
+"ui.sim.mode.title" = "Modo";
+"ui.sim.mode.split" = "Repartir en ambas";
+"ui.sim.mode.fixFirst" = "Fijar 1ª, calcular 2ª";
+"ui.sim.impact" = "Impacto nota";
+"ui.sim.unreachable" = "Inalcanzable (>10)";
+"ui.sim.scenarios" = "Escenarios guardados";
+"ui.sim.save" = "Guardar escenario";
+"ui.sim.compare" = "Comparar escenarios";
+
+/* Planner */
+"ui.planner.agenda" = "Agenda diaria";
+"ui.planner.workload" = "Carga semanal estimada";
+"ui.planner.studyStreak" = "Racha de estudio";
+"ui.planner.weeklyGoals" = "Objetivos semanales";
+"ui.planner.focus" = "Modo enfoque";
+"ui.planner.trash" = "Papelera (30 días)";
+"ui.planner.monthly.summary" = "Resumen mensual";
+"ui.planner.progress.report" = "Informe progreso";
+"ui.planner.upcoming" = "Entrega próxima";
+"ui.planner.studyModes" = "Modos de estudio";
+
+/* Finance */
+"ui.finance.title" = "Finanzas";
+"ui.finance.price" = "Precio";
+"ui.finance.pricePerCredit" = "Precio/crédito";
+"ui.finance.extraCost" = "Coste extra";
+"ui.finance.extraCosts" = "Costes extra";
+"ui.finance.semesterCost" = "Coste del semestre";
+"ui.finance.total" = "Total";
+"ui.finance.summary.total" = "Coste total carrera";
+"ui.finance.summary.average" = "Precio medio/ECTS";
+
+/* MEC Scholarship */
+"ui.mec.title" = "Beca MEC";
+"ui.mec.academicYear" = "Curso académico";
+"ui.mec.eligibility" = "Seguimiento beca";
+"ui.mec.verdict" = "Veredicto";
+"ui.mec.eligible" = "Apta";
+"ui.mec.atRisk" = "En riesgo";
+"ui.mec.notEligible" = "No apta";
+"ui.mec.minECTS" = "ECTS mín. mat.";
+"ui.mec.minPass" = "Superación mín.";
+"ui.mec.minGrade" = "Nota media mín.";
+
+/* Form & UI */
+"ui.form.general" = "Datos generales";
+"ui.form.evaluation" = "Bloques de evaluación";
+"ui.form.objectives" = "Objetivos aprendizaje";
+"ui.form.diagnostics" = "Diagnóstico reglas";
+"ui.form.placeholder.block" = "Nombre bloque (ej. PEC)";
+"ui.form.placeholder.activity" = "Ejemplo: PEC 1";
+
+/* Alerts & Messages */
+"ui.alert.error" = "Error";
+"ui.alert.success" = "Éxito";
+"ui.alert.warning" = "Aviso";
+"ui.alert.couldNotSave" = "No se pudo guardar";
+"ui.alert.checkInput" = "Revisa los datos e inténtalo de nuevo.";
+"ui.alert.deleteConfirm" = "Esta acción no se puede deshacer.";
+"ui.alert.weeklyWorkloadAlertThreshold" = "Umbral de alerta de carga semanal";
+
+/* Formats */
+"ui.format.credits" = "%d créditos";
+"ui.format.grade" = "Nota: %.2f";
+"ui.format.percent" = "%.0f%%";
+"ui.format.hours" = "%.1f h";
+"ui.format.currency" = "%.2f €";
+"ui.format.week" = "Semana %d";
+"ui.format.attempt" = "Intento #%d";
+"ui.format.subject" = "Asignatura: %@";
+"ui.format.status" = "Estado: %@";
+"ui.format.grade2f" = "%.2f";
+"ui.format.percentValue" = "%@%%";
+"ui.format.progress" = "Progreso: %@ (%d/%d actividades)";
