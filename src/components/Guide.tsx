@@ -5,6 +5,7 @@ import { RichText } from "../lib/rich";
 import { useStore } from "../store";
 import { FormStatus, Loading, Modal, useSubmit } from "../ui";
 import { t } from "../i18n";
+import { Icon, Notebook, Pencil } from "../vendor/icons";
 
 /** Guía de una lección: tu teoría (la escribes tú) y/o el enlace a tus apuntes. */
 export function GuideModal({ lessonId, onClose }: { lessonId: number | null; onClose: () => void }) {
@@ -62,11 +63,11 @@ export function GuideModal({ lessonId, onClose }: { lessonId: number | null; onC
           {lesson.theory.trim() ? <RichText text={lesson.theory} className="lesson-card__body" /> : <p className="muted">{t("Aún no has escrito la guía de esta lección.")}</p>}
           {lesson.theory_url && (
             <a className="btn btn--ghost btn--sm" href={lesson.theory_url} target={lesson.theory_url.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
-              {t("📓 Abrir mis apuntes")}
+              <Icon svg={Notebook} /> {t("Abrir mis apuntes")}
             </a>
           )}
           <button type="button" className="btn btn--ghost btn--sm" onClick={() => setEditing(true)}>
-            {t("✏️ Editar guía")}
+            <Icon svg={Pencil} /> {t("Editar guía")}
           </button>
         </div>
       )}

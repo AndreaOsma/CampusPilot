@@ -8,6 +8,7 @@ import "../vendor/learn-game/learn-game.css";
 import { useStore } from "../store";
 import { Card, Empty, ErrorBox, Loading, PageHeader, ProgressBar, useLoad, useUiMode } from "../ui";
 import { t } from "../i18n";
+import { Brain, ChevronUp, ChevronsUp, Flame, Icon, Leaf, Library, NotebookPen, OctagonAlert, Play, Target, TriangleAlert } from "../vendor/icons";
 
 export function Dashboard({ navigate }: { navigate: Navigate }) {
   const { settings, careers, loading: storeLoading } = useStore();
@@ -50,7 +51,7 @@ export function Dashboard({ navigate }: { navigate: Navigate }) {
 
       {heavyNow && (
         <div className="banner banner--warn" role="status">
-          <strong>{t("▲ Semana cargada")}</strong>{t(": entregas de")} {heavyNow.subjects.join(" y ")}.
+          <strong><Icon svg={ChevronsUp} /> {t("Semana cargada")}</strong>{t(": entregas de")} {heavyNow.subjects.join(" y ")}.
         </div>
       )}
 
@@ -83,7 +84,7 @@ export function Dashboard({ navigate }: { navigate: Navigate }) {
       {aprender && (data.next_lessons.length > 0 || data.learn.streak > 0) && (
         <section className="learn-strip" aria-label={t("Aprender")}>
           <span className={`learn-strip__streak${data.learn.streak ? " is-on" : ""}`} title={t("Días de racha")}>
-            🔥 {data.learn.streak}
+            <Icon svg={Flame} /> {data.learn.streak}
           </span>
           <span className="learn-strip__goal" title={t("XP de hoy")}>
             <ProgressBar value={Math.min(data.learn.today_xp, data.learn.goal)} max={data.learn.goal} label={t("Meta diaria de XP")} />
@@ -95,7 +96,7 @@ export function Dashboard({ navigate }: { navigate: Navigate }) {
             {data.next_lessons.slice(0, mode === "minimal" ? 2 : 4).map((l) => (
               <a key={l.lesson_id} className="chip-link" style={subjectStyle(l.subject_id)} href={`/aprender/leccion/${l.lesson_id}`}
                 onClick={linkTo(navigate, { name: "lesson", id: l.lesson_id })}>
-                ▶ {l.subject_name}
+                <Icon svg={Play} /> {l.subject_name}
               </a>
             ))}
           </span>
@@ -108,7 +109,7 @@ export function Dashboard({ navigate }: { navigate: Navigate }) {
             {data.at_risk.map((r) => (
               <li key={r.id} className={`risk-list__item is-${r.level}`}>
                 <a href={`/asignaturas/${r.id}`} onClick={linkTo(navigate, { name: "subject", id: r.id })}>
-                  {r.level === "crit" ? "⛔" : "⚠️"} {r.name}
+                  <Icon svg={r.level === "crit" ? OctagonAlert : TriangleAlert} /> {r.name}
                 </a>
                 <span className="small muted">{r.reason}</span>
               </li>
@@ -139,7 +140,7 @@ export function Dashboard({ navigate }: { navigate: Navigate }) {
           <a className="stat stat--link" href="/estudio" onClick={linkTo(navigate, { name: "study" })}>
             <span className="stat__label">{t("Estudio esta semana")}</span>
             <span className="stat__value">{fmtMinutes(data.study_minutes_week)}</span>
-            {data.cards_due > 0 && <span className="small">🧠 {data.cards_due} {t("preguntas para repasar")}</span>}
+            {data.cards_due > 0 && <span className="small"><Icon svg={Brain} /> {data.cards_due} {t("preguntas para repasar")}</span>}
           </a>
         )}
         {data.inbox_pending && data.inbox_pending.new + data.inbox_pending.proposals > 0 && (
@@ -177,7 +178,7 @@ export function Dashboard({ navigate }: { navigate: Navigate }) {
           >
             {data.overdue.length > 0 && (
               <div className="banner banner--crit small">
-                <strong>{t("⚠ Pasadas sin marcar como hechas")}</strong>
+                <strong><Icon svg={TriangleAlert} /> {t("Pasadas sin marcar como hechas")}</strong>
                 <ul className="overdue-list">
                   {data.overdue.map((o) => (
                     <li key={o.id}>
@@ -200,7 +201,7 @@ export function Dashboard({ navigate }: { navigate: Navigate }) {
               </ul>
             )}
             {rest.length === 0 && data.open_windows.length === 0 ? (
-              <Empty icon="🌿" title={t("Nada en las próximas dos semanas")} />
+              <Empty icon={Leaf} title={t("Nada en las próximas dos semanas")} />
             ) : (
               <ul className="agenda-list">
                 {rest.map((it) => (
@@ -210,7 +211,7 @@ export function Dashboard({ navigate }: { navigate: Navigate }) {
             )}
             {heavyNext && mode === "detailed" && (
               <p className="muted small">
-                {t("▲ La semana del")} {fmtDate(heavyNext.week)} {t("también viene cargada (")}{heavyNext.subjects.join(", ")}).
+                <Icon svg={ChevronsUp} /> {t("La semana del")} {fmtDate(heavyNext.week)} {t("también viene cargada (")}{heavyNext.subjects.join(", ")}).
               </p>
             )}
           </Card>
@@ -234,7 +235,7 @@ export function Dashboard({ navigate }: { navigate: Navigate }) {
 
           <Card title={t("Asignaturas en curso")}>
             {data.enrolled.length === 0 ? (
-              <Empty icon="📚" title={t("No tienes asignaturas matriculadas")}>
+              <Empty icon={Library} title={t("No tienes asignaturas matriculadas")}>
                 {t("Márcalas como «matriculada» en el expediente o aplica un semestre desde Módulos.")}
               </Empty>
             ) : (
@@ -259,7 +260,7 @@ export function Dashboard({ navigate }: { navigate: Navigate }) {
   );
 }
 
-const PLAN_ICON: Record<DashboardT["today_plan"][number]["kind"], string> = { deliver: "📝", study: "📚", review: "🧠", lesson: "🎯" };
+const PLAN_ICON: Record<DashboardT["today_plan"][number]["kind"], string> = { deliver: NotebookPen, study: Library, review: Brain, lesson: Target };
 
 /** «Hoy toca»: de 1 a 3 cosas concretas, con enlace directo a donde se hacen. */
 function TodayPlan({ plan, navigate }: { plan: DashboardT["today_plan"]; navigate: Navigate }) {
@@ -280,7 +281,7 @@ function TodayPlan({ plan, navigate }: { plan: DashboardT["today_plan"]; navigat
           return (
             <li key={i} className="today-plan__item" style={subjectStyle(p.subject_id ?? null)}>
               <span className="today-plan__icon" aria-hidden>
-                {PLAN_ICON[p.kind]}
+                <Icon svg={PLAN_ICON[p.kind]} />
               </span>
               <span className="today-plan__body">
                 {to ? (
@@ -314,12 +315,12 @@ function WeekLoad({ weeks, heavy }: { weeks: DashboardT["week_load"]; heavy: str
               <span className="week-load__fill" style={{ width: `${(w.hours / max) * 100}%` }} />
             </span>
             <span className="week-load__num small">
-              {w.hours} h{w.deliveries > 0 && ` · ${w.deliveries} 📝`}
+              {w.hours} h{w.deliveries > 0 && <> · {w.deliveries} <Icon svg={NotebookPen} label={t("entregas")} /></>}
             </span>
           </li>
         ))}
       </ul>
-      <p className="muted small">{t("Horas semanales de tus asignaturas + las estimadas de lo que vence. ▲ = semana cargada.")}</p>
+      <p className="muted small">{t("Horas semanales de tus asignaturas + las estimadas de lo que vence.")} <Icon svg={ChevronsUp} /> {t("= semana cargada.")}</p>
     </Card>
   );
 }

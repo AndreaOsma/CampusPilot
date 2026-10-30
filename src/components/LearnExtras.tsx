@@ -5,6 +5,7 @@ import { linkTo, type Navigate } from "../router";
 import { useStore } from "../store";
 import { Card, ConfirmDelete, Field, FormStatus, useLoad, useSubmit, useUiMode } from "../ui";
 import { t } from "../i18n";
+import { Icon, Sparkles, Target, TriangleAlert } from "../vendor/icons";
 
 export function Mastery({ courseId, navigate }: { courseId: number; navigate: Navigate }) {
   const concepts = useLoad(() => api.learn.concepts(courseId), [courseId]);
@@ -20,7 +21,7 @@ export function Mastery({ courseId, navigate }: { courseId: number; navigate: Na
       title={t("Dominio por concepto")}
       actions={
         <a className="btn btn--ghost btn--sm" href={`/aprender/practica/${courseId}`} onClick={linkTo(navigate, { name: "practice", courseId, concept: "" })}>
-          {t("🎯 Practicar lo más flojo")}
+          <Icon svg={Target} /> {t("Practicar lo más flojo")}
         </a>
       }
     >
@@ -41,7 +42,7 @@ export function Mastery({ courseId, navigate }: { courseId: number; navigate: Na
               </a>
               {c.confident_wrong > 0 && (
                 <span className="mastery__warn small" title={t("Fallos con confianza alta")}>
-                  ⚠ {c.confident_wrong}
+                  <Icon svg={TriangleAlert} /> {c.confident_wrong}
                 </span>
               )}
             </li>
@@ -53,7 +54,7 @@ export function Mastery({ courseId, navigate }: { courseId: number; navigate: Na
           {t("Ver los")} {sorted.length} {t("conceptos")}
         </button>
       )}
-      <p className="muted small detail-only">{t("Aciertos sobre intentos de los ejercicios de cada concepto. ⚠ = fallos en los que tenías claro que acertabas.")}</p>
+      <p className="muted small detail-only">{t("Aciertos sobre intentos de los ejercicios de cada concepto. La alerta marca los fallos en los que tenías claro que acertabas.")}</p>
     </Card>
   );
 }
@@ -176,7 +177,7 @@ export function Generator({ navigate, subjectId }: { navigate: Navigate; subject
         </div>
         <div className="form-actions">
           <button type="submit" className="btn btn--primary" disabled={!st?.enabled || !subjectId || (!files.length && !picked.length) || running || state.status === "loading"}>
-            {t("✨ Generar borrador")}
+            <Icon svg={Sparkles} /> {t("Generar borrador")}
           </button>
           <FormStatus state={state} />
         </div>
@@ -190,7 +191,7 @@ export function Generator({ navigate, subjectId }: { navigate: Navigate; subject
                 {j.subject_id && <span className="muted small"> · {subjects.find((x) => x.id === j.subject_id)?.name}</span>}
                 <div className={`small ${j.status === "error" ? "text-crit" : "muted"}`}>
                   {JOB_LABEL[j.status]} · {fmtDate(j.created_at.slice(0, 10))}
-                  {j.status === "done" && ` · ${j.mode === "plan" && j.plan_counts ? t("{0} objetivos, {1} módulos, {2} fechas", { 0: j.plan_counts.objectives, 1: j.plan_counts.modules, 2: j.plan_counts.activities }) : t(j.mode === "theory" ? "{0} tarjetas de teoría" : "{0} pasos", { 0: j.steps })}${j.review ? t(" · {0} para revisar", { 0: j.review }) : ""}${j.dropped ? t(" · {0} descartados", { 0: j.dropped }) : ""}`}
+                  {j.status === "done" && ` · ${j.mode === "plan" && j.plan_counts ? t("{0} objetivos, {1} módulos, {2} fechas", { 0: j.plan_counts.objectives, 1: j.plan_counts.modules, 2: j.plan_counts.activities }) : t(j.mode === "theory" ? "{0} tarjetas de teoría" : "{0} pasos", { 0: j.steps })}${j.review ? t(" · {0} para revisar", { 0: j.review }) : ""}${j.dropped ? t(" · {0} descartados", { 0: j.dropped }) : ""}${j.no_theory ? t(" · {0} lecciones sin teoría", { 0: j.no_theory }) : ""}`}
                   {j.status === "error" && ` · ${j.error}`}
                 </div>
               </div>
@@ -200,7 +201,7 @@ export function Generator({ navigate, subjectId }: { navigate: Navigate; subject
                     {t("Revisar")}
                   </a>
                 )}
-                {j.status !== "running" && <ConfirmDelete label="✕" onConfirm={() => void api.learn.removeJob(j.id).then(jobs.reload)} />}
+                {j.status !== "running" && <ConfirmDelete label={t("Quitar")} onConfirm={() => void api.learn.removeJob(j.id).then(jobs.reload)} />}
               </span>
             </li>
           ))}

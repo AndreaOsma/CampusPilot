@@ -38,9 +38,9 @@ WORKDIR /app
 # Paquetes del sistema al día (parches de seguridad de Debian) — la imagen base
 # no siempre trae las últimas revisiones de util-linux/bsdutils/etc. El daemon Docker de
 # la CI es compartido entre apps: sin invalidar esta capa reutilizaría un upgrade viejo y
-# Trivy bloquearía por CVEs ya parcheados. La CI pasa la fecha del día como APT_CACHEBUST.
-ARG APT_CACHEBUST=2026-10-09
-RUN echo "apt cachebust ${APT_CACHEBUST}" && apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+# Trivy bloquearía por CVEs ya parcheados. La CI pasa la fecha del día como SECURITY_REFRESH.
+ARG SECURITY_REFRESH=0
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 # Solo dependencias de ejecución (pytest y compañía van en requirements-dev.txt).
 COPY backend/requirements.txt .
@@ -66,9 +66,9 @@ ENV CAMPUS_STATIC_DIR=/app/static \
     CAMPUS_TZ=Europe/Madrid \
     PORT=8080
 
-# Usuario sin privilegios para quien autoaloje (deploy/docker-compose.yml lo usa con
-# `user: 10001:10001`). La imagen sigue arrancando como root por defecto para no romper
-# instalaciones existentes cuyo /data es de root.
+# Usuario sin privilegios: startup.sh arranca como root solo para darle /data (y la copia de los secretos de
+# agenix) y lanza uvicorn ya como él (setpriv); así sirve también para instalaciones cuyo /data es de root.
+# Quien autoaloje puede arrancar directamente con `user: 10001:10001` (deploy/docker-compose.yml).
 RUN useradd --system --uid 10001 --home-dir /data --no-create-home campus \
     && mkdir -p /data && chown 10001:10001 /data
 

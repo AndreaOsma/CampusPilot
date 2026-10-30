@@ -50,17 +50,56 @@ def _set_state(db: Session, **values) -> None:
 
 # ---------- ntfy ----------
 
-def ntfy_configured() -> bool:
-    return bool(config.NTFY_URL)
+# El token de Ajustes va en una clave privada («_»): no lo devuelve la API ni viaja en las copias.
+NTFY_TOKEN_KEY = "_ntfy_token"
 
 
-def _ntfy_auth() -> dict:
-    if config.NTFY_TOKEN:
-        return {"headers": {"Authorization": f"Bearer {config.NTFY_TOKEN}"}}
-    if config.NTFY_AUTH_FILE and Path(config.NTFY_AUTH_FILE).is_file():
-        user, _, password = Path(config.NTFY_AUTH_FILE).read_text(encoding="utf-8").strip().partition(":")
+def ntfy_token(db: Session) -> str:
+    row = db.get(models.Setting, NTFY_TOKEN_KEY)
+    return str(row.value or "") if row else ""
+
+
+def set_ntfy_token(db: Session, token: str) -> None:
+    row = db.get(models.Setting, NTFY_TOKEN_KEY)
+    if not token:
+        if row is not None:
+            db.delete(row)
+    elif row is None:
+        db.add(models.Setting(key=NTFY_TOKEN_KEY, value=token))
+    else:
+        row.value = token
+    db.commit()
+
+
+def _auth_from(secret: str) -> dict:
+    """Un token de acceso ("tk_…") o "usuario:contraseña"; sin nada, anónimo."""
+    if not secret:
+        return {}
+    if ":" in secret and not secret.startswith("tk_"):
+        user, _, password = secret.partition(":")
         return {"auth": (user, password)}
+    return {"headers": {"Authorization": f"Bearer {secret}"}}
+
+
+def _installation_auth() -> dict:
+    if config.NTFY_TOKEN:
+        return _auth_from(config.NTFY_TOKEN)
+    if config.NTFY_AUTH_FILE and Path(config.NTFY_AUTH_FILE).is_file():
+        return _auth_from(Path(config.NTFY_AUTH_FILE).read_text(encoding="utf-8").strip())
     return {}
+
+
+def ntfy_target(db: Session) -> tuple[str, dict]:
+    """(servidor, credenciales). Manda el de Ajustes; si está vacío, el de la instalación. Las
+    credenciales de la instalación nunca se mandan a un servidor puesto en Ajustes."""
+    own = load_settings(db).notifications.server.strip()
+    if own:
+        return own, _auth_from(ntfy_token(db))
+    return config.NTFY_URL, _installation_auth()
+
+
+def ntfy_configured(db: Session) -> bool:
+    return bool(ntfy_target(db)[0])
 
 
 def _header_safe(value: str) -> str:
@@ -69,15 +108,15 @@ def _header_safe(value: str) -> str:
     return "=?UTF-8?B?" + base64.b64encode(value.encode("utf-8")).decode("ascii") + "?="
 
 
-def send_ntfy(topic: str, title: str, message: str, tags: str = "mortar_board", priority: str = "default") -> None:
-    if not ntfy_configured():
-        raise RuntimeError("ntfy no está configurado en el servidor (CAMPUS_NTFY_URL)")
-    auth = _ntfy_auth()
+def send_ntfy(db: Session, topic: str, title: str, message: str, tags: str = "mortar_board", priority: str = "default") -> None:
+    server, auth = ntfy_target(db)
+    if not server:
+        raise RuntimeError("Pon tu servidor de ntfy en Ajustes → Avisos")
     headers = {"Title": _header_safe(title), "Tags": tags, "Priority": priority, **auth.get("headers", {})}
     if config.PUBLIC_URL:
         headers["Click"] = config.PUBLIC_URL
     resp = httpx.post(
-        f"{config.NTFY_URL.rstrip('/')}/{topic}",
+        f"{server.rstrip('/')}/{topic}",
         content=message.encode("utf-8"),
         headers=headers,
         auth=auth.get("auth"),
@@ -200,8 +239,8 @@ def tick(now: Optional[datetime] = None) -> None:
         if notif.enabled and now.hour >= notif.hour and state.get("last_digest") != today.isoformat():
             lines = build_digest(db, today)
             try:
-                if lines and ntfy_configured():
-                    send_ntfy(notif.topic, "Campus Pilot", "\n".join(lines))
+                if lines and ntfy_configured(db):
+                    send_ntfy(db, notif.topic, "Campus Pilot", "\n".join(lines))
                 _set_state(db, last_digest=today.isoformat())
             except Exception:  # noqa: BLE001
                 logger.exception("ntfy digest failed")
@@ -215,15 +254,15 @@ def tick(now: Optional[datetime] = None) -> None:
         except Exception:  # noqa: BLE001 — sin conexión con el Worker: se reintenta en el siguiente tick
             logger.exception("inbox pull failed")
             new_ids = []
-        if new_ids and ntfy_configured():
+        if new_ids:
             with SessionLocal() as db:
                 notif = load_settings(db).notifications
                 lines, urgent = inbox.notification_lines(db, new_ids)
-            if notif.enabled and lines:
-                try:
-                    send_ntfy(notif.topic, " · ".join(x for x in ("Bandeja", inbox.institution(db)) if x), "\n".join(lines), tags="inbox_tray", priority="high" if urgent else "default")
-                except Exception:  # noqa: BLE001
-                    logger.exception("ntfy inbox notice failed")
+                if notif.enabled and lines and ntfy_configured(db):
+                    try:
+                        send_ntfy(db, notif.topic, " · ".join(x for x in ("Bandeja", inbox.institution(db)) if x), "\n".join(lines), tags="inbox_tray", priority="high" if urgent else "default")
+                    except Exception:  # noqa: BLE001
+                        logger.exception("ntfy inbox notice failed")
 
 
 async def run_forever() -> None:

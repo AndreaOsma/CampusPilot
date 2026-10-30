@@ -1,5 +1,6 @@
 /* GENERADO desde dev/lib/learn-game (Homelab): no lo edites aquí, edita la librería y ejecuta su sync.mjs */
 import { useMemo, type MouseEvent, type ReactNode } from "react";
+import { Flame, Icon, Timer, Volume2, VolumeX, X, Zap } from "../icons";
 import { Mascot, type MascotKind } from "./Mascot";
 import { WeekDots } from "./Game";
 import { fmtClock, spanish, type GameState, type Tx } from "./types";
@@ -31,7 +32,7 @@ export function PlayerTop({
   return (
     <div className="lp-top">
       <a className="lp-x" href={exitHref} onClick={onExit} aria-label={tx("Salir")}>
-        ✕
+        <Icon svg={X} />
       </a>
       <div className={`lp-bar${hot ? " is-hot" : ""}`} role="progressbar" aria-label={tx("Progreso")} aria-valuemin={0} aria-valuemax={100}
         aria-valuenow={Math.round(progress * 100)}>
@@ -39,15 +40,15 @@ export function PlayerTop({
       </div>
       {remainingSec !== null && remainingSec !== undefined ? (
         <span className={`lp-clock${remainingSec < 60 ? " text-crit" : ""}`} aria-label={tx("Quedan {0}", { 0: fmtClock(remainingSec) })}>
-          ⏱ {fmtClock(remainingSec)}
+          <Icon svg={Timer} /> {fmtClock(remainingSec)}
         </span>
       ) : (
         <span className="lp-xp" aria-label={tx("{0} XP", { 0: xp })}>
-          ⚡{xp}
+          <Icon svg={Zap} />{xp}
         </span>
       )}
       <button type="button" className="lp-icon" aria-label={sounds ? tx("Silenciar") : tx("Activar sonido")} aria-pressed={sounds} onClick={onToggleSounds}>
-        {sounds ? "🔊" : "🔇"}
+        <Icon svg={sounds ? Volume2 : VolumeX} />
       </button>
       {children}
     </div>
@@ -58,7 +59,7 @@ export function ComboFlash({ n, tx = spanish }: { n: number | null; tx?: Tx }) {
   if (!n) return null;
   return (
     <div className="lp-combo" role="status">
-      🔥 ¡{n} {tx("seguidas!")}
+      <Icon svg={Flame} /> ¡{n} {tx("seguidas!")}
     </div>
   );
 }

@@ -30,7 +30,9 @@ _ical_token_file = os.getenv("CAMPUS_ICAL_TOKEN_FILE", "").strip()
 if not ICAL_TOKEN and _ical_token_file and Path(_ical_token_file).is_file():
     ICAL_TOKEN = Path(_ical_token_file).read_text(encoding="utf-8").strip()
 
-# Avisos por ntfy (opcional). Sin CAMPUS_NTFY_URL quedan desactivados.
+# Avisos por ntfy (opcional): el servidor se pone en Ajustes → Avisos o, para toda la instalación,
+# con CAMPUS_NTFY_URL (lo de Ajustes manda). Las credenciales de aquí (CAMPUS_NTFY_TOKEN o
+# CAMPUS_NTFY_AUTH_FILE, "usuario:contraseña") solo van a ese servidor; las de Ajustes, aparte.
 NTFY_URL = os.getenv("CAMPUS_NTFY_URL", "").strip()
 NTFY_TOKEN = os.getenv("CAMPUS_NTFY_TOKEN", "").strip()
 NTFY_AUTH_FILE = os.getenv("CAMPUS_NTFY_AUTH_FILE", "").strip()
@@ -45,8 +47,12 @@ CLAUDE_BIN = os.getenv("CAMPUS_CLAUDE_BIN", "claude").strip()
 CLAUDE_MODEL = os.getenv("CAMPUS_CLAUDE_MODEL", "opus").strip()
 CLAUDE_TOKEN_FILE = os.getenv("CAMPUS_CLAUDE_TOKEN_FILE", "").strip()
 GENERATOR_TIMEOUT_S = int(os.getenv("CAMPUS_GENERATOR_TIMEOUT", "1200"))
+# Un material más largo se genera por trozos de páginas enteras (la pasarela de IA no admite
+# peticiones de más de 200.000 caracteres, y un manual entero de una vez da pocas lecciones).
+GENERATOR_CHUNK_CHARS = int(os.getenv("CAMPUS_GENERATOR_CHUNK_CHARS", "90000"))
 MAX_MATERIAL_BYTES = 1_500_000  # texto total enviado al modelo
 MAX_PDF_BYTES = 40 * 1024 * 1024
+MAX_VIDEO_BYTES = int(os.getenv("CAMPUS_MAX_VIDEO_MB", "1024")) * 1024 * 1024
 MAX_PDF_PAGES = 600
 
 # Bandeja de la universidad: correos reenviados (Cloudflare Email Routing → Worker → /inbox/ingest) y

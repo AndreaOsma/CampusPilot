@@ -9,6 +9,7 @@ import { linkTo, type Navigate } from "../router";
 import { useStore } from "../store";
 import { Card, ConfirmDelete, Empty, ErrorBox, Field, FormStatus, Loading, Modal, PageHeader, useLoad, useSubmit, useUiMode } from "../ui";
 import { t } from "../i18n";
+import { Icon, NotebookPen, X } from "../vendor/icons";
 
 function emptyActivity(subjectId: number, groupId: number | null, scale = 10): ActivityIn {
   return {
@@ -177,7 +178,7 @@ function GroupsEditor({ subjectId, groups, rules, onChange }: { subjectId: numbe
                 </select>
               </td>
               <td>
-                <ConfirmDelete onConfirm={() => void run(() => api.groups.remove(g.id).then(onChange))} label="✕" />
+                <ConfirmDelete onConfirm={() => void run(() => api.groups.remove(g.id).then(onChange))} label={t("Quitar")} />
               </td>
             </tr>
           ))}
@@ -319,7 +320,7 @@ export function SubjectDetail({ navigate, subjectId }: { navigate: Navigate; sub
               {ev.pending > 0 && (
                 <div className="grade-stat">
                   <span className="grade-stat__label">{t("Necesitas en lo pendiente")}</span>
-                  <span className={`grade-stat__value${!ev.achievable ? " text-crit" : ""}`}>{ev.achievable ? fmtGrade(ev.needed) : "✗"}</span>
+                  <span className={`grade-stat__value${!ev.achievable ? " text-crit" : ""}`}>{ev.achievable ? fmtGrade(ev.needed) : <Icon svg={X} label={t("No alcanzable")} />}</span>
                   <span className="muted small">
                     {ev.achievable ? t("para un {0} · {1} pendiente{2}", { 0: fmtGrade(target), 1: ev.pending, 2: ev.pending > 1 ? "s" : "" }) : t("ya no se llega al objetivo")}
                   </span>
@@ -409,7 +410,7 @@ export function SubjectDetail({ navigate, subjectId }: { navigate: Navigate; sub
         {actsQ.loading ? (
           <Loading />
         ) : acts.length === 0 ? (
-          <Empty icon="📝" title={t("Sin actividades")}>
+          <Empty icon={NotebookPen} title={t("Sin actividades")}>
             {t("Añade entregas, prácticas, cuestionarios o exámenes con su fecha y su grupo.")}
           </Empty>
         ) : (

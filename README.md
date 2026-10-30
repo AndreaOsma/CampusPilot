@@ -175,8 +175,8 @@ calendario de un semestre (actividades con fecha o ventana, eventos, hábitos y 
 - Desde el expediente puedes **exportar tu carrera como módulo** (sin notas ni nada personal)
   para que otra persona la instale.
 
-El catálogo trae un módulo de ejemplo (`packs/uoc-teleco.json`: un grado de 240 ECTS con dos
-menciones y el calendario de un semestre). Si el tuyo no está, créalo desde el plan de estudios
+El catálogo trae un módulo de ejemplo (`packs/ejemplo-grado.json`: un grado inventado de 240
+créditos con dos menciones y el calendario de un semestre). Si el tuyo no está, créalo desde el plan de estudios
 oficial de tu titulación en un par de minutos (abajo) o a mano.
 
 ### Crear un módulo para tu universidad
@@ -186,7 +186,7 @@ oficial de tu titulación en un par de minutos (abajo) o a mano.
    pasa a módulo (`backend/app/degree_plan.py`): asignaturas, créditos, tipos, semestres,
    menciones y escala de notas. Lo revisas, se crea la carrera y puedes descargar el `.json`.
 2. **A mano**: crea la carrera en la app, añade asignaturas y grupos, y *Expediente →
-   Exportar como módulo de estudios*. O copia `packs/uoc-teleco.json` y edítalo.
+   Exportar como módulo de estudios*. O copia `packs/ejemplo-grado.json` y edítalo.
 3. Valídalo sin instalar: `curl -F file=@mi-modulo.json https://tu-app/api/packs/validate`
    (errores legibles, hasta 20).
 4. Para que aparezca en el catálogo de tu instalación, déjalo en `packs/` (o en
@@ -284,6 +284,18 @@ ejercicios no se tocan).
 
 Cada curso es de **una asignatura**: lo generado o importado se suma al curso
 de esa asignatura (reimportar la misma fuente reemplaza solo lo suyo).
+
+### Comprobador Feynman
+
+Al acabar un repaso (lección, repaso de fallos o práctica; no en el examen) la app ofrece hasta
+tres conceptos que han salido, los fallados primero, y pide explicarlos por escrito con tus
+palabras (`backend/app/feynman.py`). La IA de Ajustes los valora **solo contra la teoría de tus
+lecciones**: si es correcta, clara y sin jerga, con ejemplos, qué falta (explicado con teoría) y
+una pregunta de seguimiento opcional. Cada intento se guarda por concepto y fecha
+(`GET /api/learn/courses/<curso>/feynman`) y los conceptos flojos («casi» a los 3 días,
+«repásalo» al día siguiente) vuelven al *Repaso de fallos*. Se puede saltar. No crea ejercicios
+ni resuelve problemas, y no aparece si el curso, la lección o sus tarjetas parecen una actividad
+evaluable (PEC, práctica, cuestionario, examen…).
 
 ### Esta semana
 

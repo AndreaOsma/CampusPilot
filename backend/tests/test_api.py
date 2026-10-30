@@ -6,7 +6,7 @@ import pytest
 
 
 def install_teleco(client):
-    r = client.post("/api/packs/uoc-teleco/install")
+    r = client.post("/api/packs/ejemplo-grado/install")
     assert r.status_code == 200, r.text
     return r.json()["career_id"]
 
@@ -22,7 +22,7 @@ def test_health(client):
 
 def test_catalog_lists_teleco(client):
     packs = client.get("/api/packs").json()
-    teleco = next(p for p in packs if p["slug"] == "uoc-teleco")
+    teleco = next(p for p in packs if p["slug"] == "ejemplo-grado")
     assert teleco["in_catalog"] and teleco["installed_version"] is None
     assert teleco["ects_total"] == 240
     assert teleco["terms"][0]["label"] == "2026S1"
@@ -51,7 +51,7 @@ def test_install_creates_pending_subjects_and_is_idempotent(client):
 
 def test_apply_term_enrolls_and_adds_calendar(client):
     career_id = install_teleco(client)
-    r = client.post("/api/packs/uoc-teleco/terms/2026s1/apply")
+    r = client.post("/api/packs/ejemplo-grado/terms/2026s1/apply")
     assert r.status_code == 200, r.text
     counts = r.json()
     assert counts["subjects"] == 2 and counts["activities"] == 19 and counts["procedures"] == 2
@@ -59,12 +59,12 @@ def test_apply_term_enrolls_and_adds_calendar(client):
     fp = subject_by_name(client, career_id, "Fundamentos de programación")
     assert fp["status"] == "enrolled" and fp["term_id"] == counts["term_id"]
     acts = client.get("/api/activities", params={"subject_id": fp["id"]}).json()
-    pec1 = next(a for a in acts if a["name"] == "PEC 1")
+    pec1 = next(a for a in acts if a["name"] == "Entrega 1")
     assert pec1["due_date"] == "2026-10-07" and pec1["group_id"] is not None
 
     # Nota y "hecho" del usuario sobreviven a reaplicar el semestre.
     client.put(f"/api/activities/{pec1['id']}", json={**pec1, "grade": 8, "done": True})
-    client.post("/api/packs/uoc-teleco/terms/2026s1/apply")
+    client.post("/api/packs/ejemplo-grado/terms/2026s1/apply")
     pec1 = client.get(f"/api/activities/{pec1['id']}").json()
     assert pec1["grade"] == 8 and pec1["done"] is True
     assert len(client.get("/api/activities", params={"subject_id": fp["id"]}).json()) == len(acts)
@@ -75,11 +75,11 @@ def test_apply_term_enrolls_and_adds_calendar(client):
 
 def test_agenda_heavy_week_and_windows(client):
     install_teleco(client)
-    client.post("/api/packs/uoc-teleco/terms/2026s1/apply")
+    client.post("/api/packs/ejemplo-grado/terms/2026s1/apply")
     data = client.get("/api/agenda", params={"start": "2026-11-02", "end": "2026-11-15"}).json()
     titles = [i["title"] for i in data["items"]]
-    assert "PR 1" in titles and any(t.startswith("Vídeo R2") for t in titles)
-    # Semana del 2 de noviembre: PR 1 de FP + ventana del vídeo R2 de Mates → ▲
+    assert "Práctica 1" in titles and any(t.startswith("Vídeo R2") for t in titles)
+    # Semana del 2 de noviembre: Práctica 1 de FP + ventana del vídeo R2 de Mates → ▲
     assert {"week": "2026-11-02", "subjects": ["Fundamentos de programación", "Matemáticas I"]} in data["heavy_weeks"]
     assert all(i["ai_forbidden"] for i in data["items"] if i["type"] in ("activity", "window"))
 
@@ -91,7 +91,7 @@ def test_agenda_range_is_limited(client):
 
 def test_ics_feed_and_token(client):
     install_teleco(client)
-    client.post("/api/packs/uoc-teleco/terms/2026s1/apply")
+    client.post("/api/packs/ejemplo-grado/terms/2026s1/apply")
     body = client.get("/api/calendar.ics").text
     assert body.startswith("BEGIN:VCALENDAR") and "END:VCALENDAR" in body
     assert all(len(line.encode()) <= 75 for line in body.split("\r\n"))
@@ -101,7 +101,7 @@ def test_ics_feed_and_token(client):
 
 def test_evaluation_and_simulation(client):
     career_id = install_teleco(client)
-    client.post("/api/packs/uoc-teleco/terms/2026s1/apply")
+    client.post("/api/packs/ejemplo-grado/terms/2026s1/apply")
     fp = subject_by_name(client, career_id, "Fundamentos de programación")
     acts = client.get("/api/activities", params={"subject_id": fp["id"]}).json()
     for a in acts:
@@ -166,7 +166,7 @@ def test_study_sessions_and_stats(client):
 
 def test_dashboard(client):
     install_teleco(client)
-    client.post("/api/packs/uoc-teleco/terms/2026s1/apply")
+    client.post("/api/packs/ejemplo-grado/terms/2026s1/apply")
     data = client.get("/api/dashboard").json()
     assert len(data["enrolled"]) == 2
     assert data["careers"][0]["ects_goal"] == 240
@@ -183,7 +183,7 @@ def test_career_summary_by_kind(client):
 
 def test_export_career_as_pack_roundtrip(client):
     career_id = install_teleco(client)
-    client.post("/api/packs/uoc-teleco/terms/2026s1/apply")
+    client.post("/api/packs/ejemplo-grado/terms/2026s1/apply")
     pack = client.get(f"/api/careers/{career_id}/export-pack").json()
     assert pack["format"] == "campus-pilot-pack" and len(pack["subjects"]) == 46
     dumped = json.dumps(pack)
@@ -204,19 +204,19 @@ def test_upload_rejects_invalid_pack(client):
 
 def test_uninstall_keeps_or_deletes_career(client):
     career_id = install_teleco(client)
-    assert client.delete("/api/packs/uoc-teleco").status_code == 204
+    assert client.delete("/api/packs/ejemplo-grado").status_code == 204
     assert client.get(f"/api/careers/{career_id}").status_code == 200
     install_teleco(client)
-    client.delete("/api/packs/uoc-teleco", params={"delete_career": True})
+    client.delete("/api/packs/ejemplo-grado", params={"delete_career": True})
     assert client.get(f"/api/careers/{career_id}").status_code == 404
 
 
 def test_backup_roundtrip(client):
     install_teleco(client)
-    client.post("/api/packs/uoc-teleco/terms/2026s1/apply")
+    client.post("/api/packs/ejemplo-grado/terms/2026s1/apply")
     client.post("/api/path", json={"title": "CCNA", "kind": "certification", "skills": ["Redes", "redes", "BGP"]})
     backup = client.get("/api/backup").content
-    client.delete("/api/packs/uoc-teleco", params={"delete_career": True})
+    client.delete("/api/packs/ejemplo-grado", params={"delete_career": True})
     r = client.post("/api/backup/restore", files={"file": ("b.json", io.BytesIO(backup), "application/json")})
     assert r.status_code == 200, r.text
     assert len(client.get("/api/subjects").json()) == 46
@@ -249,7 +249,7 @@ def test_settings_validation(client):
 
 def test_money(client):
     install_teleco(client)
-    counts = client.post("/api/packs/uoc-teleco/terms/2026s1/apply").json()
+    counts = client.post("/api/packs/ejemplo-grado/terms/2026s1/apply").json()
     s = client.get("/api/settings").json()
     client.put("/api/settings", json={**s, "default_price_per_credit": 20})
     est = client.get(f"/api/terms/{counts['term_id']}/tuition-estimate").json()

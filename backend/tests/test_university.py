@@ -54,10 +54,10 @@ def test_planned_term_systems(client):
     assert client.post("/api/subjects", json={"career_id": c["id"], "name": "B", "planned_term": "2026S3"}).status_code == 422
 
 
-def test_uoc_pack_declares_its_rules(client):
-    career_id = client.post("/api/packs/uoc-teleco/install").json()["career_id"]
+def test_example_pack_declares_its_rules(client):
+    career_id = client.post("/api/packs/ejemplo-grado/install").json()["career_id"]
     cfg = client.get(f"/api/careers/{career_id}").json()["config"]
-    assert cfg["labels"]["activity_kinds"]["pec"] == "PEC" and cfg["labels"]["ec"] == "EC"
+    assert cfg["labels"]["activity_kinds"]["pec"] == "Entrega" and cfg["labels"]["ec"] == "EC"
     exported = client.get(f"/api/careers/{career_id}/export-pack").json()
     assert exported["config"]["grade_max"] == 10
 
@@ -65,9 +65,9 @@ def test_uoc_pack_declares_its_rules(client):
 def test_pack_validate_and_schema(client):
     schema = client.get("/api/packs/schema").json()
     assert "config" in schema["properties"]
-    raw = json.loads((PACKS_DIR / "uoc-teleco.json").read_text())
+    raw = json.loads((PACKS_DIR / "ejemplo-grado.json").read_text())
     ok = client.post("/api/packs/validate", files={"file": ("p.json", json.dumps(raw), "application/json")}).json()
-    assert ok["ok"] is True and ok["summary"]["slug"] == "uoc-teleco"
+    assert ok["ok"] is True and ok["summary"]["slug"] == "ejemplo-grado"
     raw["subjects"][0]["groups"] = [{"ref": "g", "name": "G", "weight": 100, "min_grade": 15}]
     bad = client.post("/api/packs/validate", files={"file": ("p.json", json.dumps(raw), "application/json")}).json()
     assert bad["ok"] is False and "máxima" in bad["errors"][0]
@@ -92,7 +92,7 @@ def test_english_evaluable_text_is_blocked():
 def test_career_letter_scale(client):
     letters = [{"label": "C+", "min": 5, "value": 6}, {"label": "A", "min": 9, "value": 9.5}, {"label": "B", "min": 7, "value": 8},
                {"label": "C-", "min": 3, "value": 4}, {"label": "D", "min": 0, "value": 1.5}]
-    career = client.post("/api/careers", json={"name": "UOC", "config": {"letters": letters}}).json()
+    career = client.post("/api/careers", json={"name": "Universidad de Ejemplo", "config": {"letters": letters}}).json()
     assert [x["label"] for x in career["config"]["letters"]] == ["A", "B", "C+", "C-", "D"]  # de mayor a menor
     bad = [{"label": "A", "min": 9, "value": 9}, {"label": "A", "min": 0, "value": 1}]
     assert client.post("/api/careers", json={"name": "X", "config": {"letters": bad}}).status_code == 422

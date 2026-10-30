@@ -49,7 +49,7 @@ export function CalendarFeedsCard() {
                 <button type="button" className="btn btn--ghost btn--sm" onClick={() => void syncNow(f.id)} disabled={state.status === "loading"}>
                   {t("↻ Sincronizar")}
                 </button>
-                <ConfirmDelete label="✕" onConfirm={() => void api.calendarFeeds.remove(f.id).then(feeds.reload)} />
+                <ConfirmDelete label={t("Quitar")} onConfirm={() => void api.calendarFeeds.remove(f.id).then(feeds.reload)} />
               </span>
             </li>
           ))}

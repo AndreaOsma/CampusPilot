@@ -8,7 +8,7 @@ from datetime import date, datetime, timezone
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import Response
 from sqlalchemy import Date, DateTime
-from pydantic import ValidationError
+from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy.orm import Session
 
 from .. import clock, config, models, scheduler
@@ -47,6 +47,7 @@ BUNDLE_TABLES = [
     models.CourseUnit,
     models.Lesson,
     models.LessonStep,
+    models.ConceptCheck,
     models.LearnDay,
     models.LearnProfile,
     models.InboxMessage,
@@ -132,12 +133,16 @@ def import_bundle_replace(db: Session, bundle: dict) -> None:
         raise HTTPException(status_code=422, detail="Copia sin tablas")
     try:
         for model in reversed(BUNDLE_TABLES):
-            db.query(model).delete()
+            # Las claves privadas («_»: secretos, token de ntfy, IA) no van en la copia: se quedan las de aquí.
+            q = db.query(model).filter(~models.Setting.key.startswith("_")) if model is models.Setting else db.query(model)
+            q.delete(synchronize_session=False)
         for model in BUNDLE_TABLES:
             columns = {c.name: c for c in model.__table__.columns}
             for raw in tables.get(model.__tablename__, []):
                 if not isinstance(raw, dict):
                     continue
+                if model is models.Setting and str(raw.get("key", "")).startswith("_"):
+                    continue  # las privadas son de esta instalación
                 _validate_row(model, raw)
                 values = {}
                 for key, value in raw.items():
@@ -230,8 +235,21 @@ async def import_ios(career_id: int = Form(...), file: UploadFile = File(...), d
 # ---------- Avisos ----------
 
 @router.get("/notifications/status")
-def notifications_status():
-    return {"configured": scheduler.ntfy_configured(), "server": config.NTFY_URL or None}
+def notifications_status(db: Session = Depends(get_db)):
+    """Qué servidor se usa. El de la instalación no se enseña: solo se dice que lo hay."""
+    own = load_settings(db).notifications.server.strip()
+    return {"configured": scheduler.ntfy_configured(db), "server": own or None, "installation_default": bool(config.NTFY_URL),
+            "has_token": bool(scheduler.ntfy_token(db))}
+
+
+class NtfyTokenIn(BaseModel):
+    token: str = Field(default="", max_length=500)
+
+
+@router.put("/notifications/token", status_code=204)
+def notifications_token(payload: NtfyTokenIn, db: Session = Depends(get_db)):
+    """Guarda (o borra, si va vacío) el token de tu servidor ntfy. Nunca se devuelve."""
+    scheduler.set_ntfy_token(db, payload.token.strip())
 
 
 @router.get("/notifications/preview")
@@ -244,7 +262,7 @@ def notifications_test(db: Session = Depends(get_db)):
     topic = load_settings(db).notifications.topic
     lines = scheduler.build_digest(db, clock.today()) or ["Todo en orden: nada pendiente hoy."]
     try:
-        scheduler.send_ntfy(topic, "Campus Pilot · prueba", "\n".join(lines))
+        scheduler.send_ntfy(db, topic, "Campus Pilot · prueba", "\n".join(lines))
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc))
     except Exception:

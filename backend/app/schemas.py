@@ -64,6 +64,8 @@ Grade = Annotated[Optional[float], Field(ge=0, le=100)]
 
 class NotificationSettings(BaseModel):
     enabled: bool = False
+    # Servidor ntfy propio (p. ej. https://ntfy.sh). Vacío = el de la instalación (CAMPUS_NTFY_URL).
+    server: str = Field(default="", max_length=300, pattern=r"^(https?://[^\s/?#]+(/[^\s?#]*)?)?$")
     topic: str = Field(default="campus-pilot", min_length=1, max_length=64, pattern=r"^[A-Za-z0-9_-]+$")
     hour: int = Field(default=8, ge=0, le=23)
     days_before: list[int] = Field(default_factory=lambda: [7, 3, 1, 0])

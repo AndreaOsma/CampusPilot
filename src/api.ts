@@ -1,3 +1,4 @@
+import { reloadIfSessionExpired } from "./lib/sessionGuard";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 export type ModuleId = "semestre" | "estudio" | "aprender" | "dinero" | "trayectoria" | "bandeja";
@@ -23,7 +24,8 @@ export type Settings = {
   obsidian_vault: string;
   learn_daily_xp: number;
   learn_sounds: boolean;
-  notifications: { enabled: boolean; topic: string; hour: number; days_before: number[] };
+  /** server: tu servidor ntfy; vacío = el de la instalación (CAMPUS_NTFY_URL), si lo hay. */
+  notifications: { enabled: boolean; server: string; topic: string; hour: number; days_before: number[] };
 };
 
 export type Track = { id: string; name: string };
@@ -346,9 +348,12 @@ export type CourseSummary = {
   units?: { id: number; title: string; done: boolean; chest_claimed: boolean; lessons: LessonSummary[] }[];
 };
 export type Figure = { svg: string; alt: string; caption: string };
+/** Imagen del manual que enseña una tarjeta de teoría (sale del PDF guardado en la biblioteca). */
+export type ManualImage = { material_id: number; ref: string; alt: string; caption: string };
 export type PublicStep = {
   id: number;
   figure?: Figure;
+  image?: ManualImage;
   cite?: { material_id: number; page: number | null };
   kind: "info" | "choice" | "truefalse" | "numeric" | "complex" | "order" | "param" | "match";
   prompt: string;
@@ -366,6 +371,7 @@ export type PublicStep = {
   unit?: string;
   explanation?: string;
   lesson_title?: string;
+  course_title?: string;
 };
 export type LessonFull = {
   id: number;
@@ -450,6 +456,8 @@ export type Material = {
   filename: string;
   pages: number | null;
   has_file: boolean;
+  /** application/pdf o video/*: qué fichero se abre o se ve. */
+  file_mime: string;
   chars: number;
   created_at: string;
 };
@@ -458,6 +466,22 @@ export type TutorAnswer = {
   in_material: boolean;
   citations: { material: string; section: string; page: number | null; material_id: number | null; has_file: boolean }[];
   materials: string[];
+};
+
+export type FeynmanRating = "mastered" | "almost" | "review";
+export type FeynmanPick = {
+  available: boolean;
+  reason: string;
+  concepts: { concept: string; course_id: number; step_id: number; missed: boolean; last_rating: FeynmanRating | null }[];
+};
+export type FeynmanResult = {
+  id: number;
+  course_id: number;
+  concept: string;
+  rating: FeynmanRating;
+  explanation: string;
+  feedback: { correct: boolean; clear: boolean; examples: boolean; summary: string; gaps: { point: string; theory: string }[]; follow_up: string };
+  created_at: string;
 };
 
 export type WeekModule = { ref: string; title: string; lessons: number; done: number; next_lesson_id: number | null; has_material: boolean };
@@ -541,12 +565,14 @@ export type GenerationJob = {
   steps: number;
   review: number;
   dropped: number;
+  /** Lecciones del borrador que salieron sin ninguna tarjeta de teoría. */
+  no_theory?: number;
   cost_usd: number | null;
   mode: "lessons" | "theory" | "plan" | "career";
   plan_counts?: { objectives: number; modules: number; activities: number };
   subject_state?: { has_groups: boolean; has_plan: boolean; existing: boolean[] };
   draft?: { units: { ref: string; title: string; lessons: { ref: string; title: string; steps: DraftStep[] }[] }[]; refusal?: string | null; plan?: PlanDraft; pack?: DegreePack };
-  warnings?: { step: string; lesson: string; level: "review" | "dropped"; message: string }[];
+  warnings?: { step: string; lesson: string; level: "review" | "dropped" | "figure" | "theory"; message: string }[];
 };
 
 export class NetworkError extends Error {
@@ -586,6 +612,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     response = await fetch(`${API_BASE_URL}${path}`, { credentials: "same-origin", ...init });
   } catch {
+    // ¿Sesión de Authelia caducada? Entonces no es la red: a iniciar sesión.
+    void reloadIfSessionExpired();
     throw new NetworkError();
   }
   if (!response.ok) {
@@ -639,6 +667,7 @@ export const api = {
     resolve: (id: number, index: number, action: "accept" | "dismiss") =>
       request<InboxMessage>(`/inbox/${id}/proposals/${index}`, json("POST", { action })),
     remove: (id: number) => request<void>(`/inbox/${id}`, { method: "DELETE" }),
+    paste: (data: { subject: string; sender: string; text: string }) => request<InboxMessage>("/inbox", json("POST", data)),
   },
   settings: {
     get: () => request<Settings>("/settings"),
@@ -702,6 +731,8 @@ export const api = {
     save: (body: AiSettings & { key?: string }) => request<AiPublic>("/ai", json("PUT", body)),
     removeKey: () => request<AiPublic>("/ai/key", { method: "DELETE" }),
     test: () => request<{ ok: boolean; provider: AiProvider; model: string }>("/ai/test", { method: "POST" }),
+    openrouterStart: (callbackUrl: string) => request<{ url: string }>("/ai/openrouter/start", json("POST", { callback_url: callbackUrl })),
+    openrouterFinish: (code: string) => request<AiPublic>("/ai/openrouter/finish", json("POST", { code })),
   },
 
   learn: {
@@ -743,6 +774,8 @@ export const api = {
     buy: (item: "freeze") => request<GameState>(`/learn/shop/${item}`, { method: "POST" }),
     concepts: (courseId: number) => request<ConceptMastery[]>(`/learn/courses/${courseId}/concepts`),
     practice: (courseId: number, concept: string, objective = "") => request<StepSet>(`/learn/courses/${courseId}/practice${qs({ concept, objective })}`),
+    mixedGroups: () => request<{ id: number; title: string; count: number }[]>("/learn/mixed/groups"),
+    mixed: (courses: number[]) => request<StepSet>(`/learn/mixed${qs({ courses: courses.join(",") })}`),
     exam: (courseId: number, n = 10, minutes = 30) => request<StepSet>(`/learn/courses/${courseId}/exam${qs({ n, minutes })}`),
     generatorStatus: () => request<GeneratorStatus>("/learn/generator/status"),
     generate: (files: File[], materialKind: string, title: string, subjectId: number, mode: "lessons" | "theory" = "lessons", moduleRef = "", materialIds: number[] = []) => {
@@ -764,6 +797,10 @@ export const api = {
     complete: (lessonId: number, correct: number, total: number, seconds = 0) =>
       request<CompleteResult>(`/learn/lessons/${lessonId}/complete`, json("POST", { correct, total, seconds })),
     review: () => request<{ steps: PublicStep[] }>("/learn/review"),
+    feynmanPick: (stepIds: number[], missedIds: number[]) =>
+      request<FeynmanPick>("/learn/feynman/pick", json("POST", { step_ids: stepIds, missed_ids: missedIds })),
+    feynmanCheck: (stepId: number, concept: string, explanation: string) =>
+      request<FeynmanResult>("/learn/feynman/check", json("POST", { step_id: stepId, concept, explanation })),
     stats: () => request<LearnStats>("/learn/stats"),
   },
 
@@ -781,9 +818,18 @@ export const api = {
       form.append("module_ref", moduleRef);
       return request<Material>("/materials", { method: "POST", body: form });
     },
+    uploadVideo: (subjectId: number, video: File, transcript: File | null, moduleRef: string) => {
+      const form = new FormData();
+      form.append("video", video);
+      if (transcript) form.append("transcript", transcript);
+      form.append("subject_id", String(subjectId));
+      form.append("module_ref", moduleRef);
+      return request<Material>("/materials/video", { method: "POST", body: form });
+    },
     setModule: (id: number, moduleRef: string) => request<Material>(`/materials/${id}`, json("PATCH", { module_ref: moduleRef })),
     remove: (id: number) => request<void>(`/materials/${id}`, { method: "DELETE" }),
     fileUrl: (id: number, page?: number | null) => `${API_BASE_URL}/materials/${id}/file${page ? `#page=${page}` : ""}`,
+    imageUrl: (image: ManualImage) => `${API_BASE_URL}/materials/${image.material_id}/images/${encodeURIComponent(image.ref)}`,
   },
   tutor: (body: { subject_id: number; question: string; history: { role: "user" | "tutor"; text: string }[]; module_ref?: string }) =>
     request<TutorAnswer>("/learn/tutor", json("POST", body)),
@@ -809,7 +855,9 @@ export const api = {
     studyPlan: (subjectId: number) => request<StudyPlan>(`/subjects/${subjectId}/study-plan`),
   },
   notifications: {
-    status: () => request<{ configured: boolean; server: string | null }>("/notifications/status"),
+    /** El servidor de la instalación no se enseña, solo si lo hay; el token nunca vuelve. */
+    status: () => request<{ configured: boolean; server: string | null; installation_default: boolean; has_token: boolean }>("/notifications/status"),
+    setToken: (token: string) => request<void>("/notifications/token", json("PUT", { token })),
     preview: () => request<{ lines: string[] }>("/notifications/preview"),
     test: () => request<{ status: string; topic: string }>("/notifications/test", { method: "POST" }),
   },

@@ -93,6 +93,13 @@ class StepIn(BaseModel):
             ok = isinstance(c, dict) and isinstance(c.get("material_id"), int) and (c.get("page") is None or (isinstance(c.get("page"), int) and 1 <= c["page"] <= 10000))
             if not ok:
                 self.data = d = {k: v for k, v in d.items() if k != "cite"}
+        if self.kind == "info" and "image" in d:
+            # Imagen del manual (materials.images_dir): material, ref con forma pN-K y textos cortos.
+            im = d["image"]
+            ok = (isinstance(im, dict) and isinstance(im.get("material_id"), int) and isinstance(im.get("ref"), str)
+                  and re.fullmatch(r"p\d{1,5}-\d{1,3}", im["ref"]) is not None and isinstance(im.get("alt"), str) and im["alt"].strip())
+            self.data = d = ({**d, "image": {"material_id": im["material_id"], "ref": im["ref"], "alt": im["alt"][:300],
+                                              "caption": str(im.get("caption") or "")[:200]}} if ok else {k: v for k, v in d.items() if k != "image"})
         if self.kind == "info" and "figure" in d:
             # Figura de la teoría (SVG): siempre saneada, venga de la IA o de un JSON importado.
             try:
@@ -477,7 +484,7 @@ def export_course(course: models.Course) -> dict:
                             {
                                 "ref": s.ref, "kind": s.kind, "prompt": s.prompt,
                                 # La cita apunta a la biblioteca de esta instalación: fuera no vale.
-                                "data": {k: v for k, v in (s.data or {}).items() if k != "cite"}, "explanation": s.explanation,
+                                "data": {k: v for k, v in (s.data or {}).items() if k not in ("cite", "image")}, "explanation": s.explanation,
                                 "source": s.source, "hints": s.hints or [], "concepts": s.concepts or [], "worked": s.worked or "",
                                 "objectives": s.objectives or [],
                             }
@@ -541,6 +548,9 @@ def public_step(db: Session, step: models.LessonStep, rng: Optional[random.Rando
         out["explanation"] = step.explanation
         if (step.data or {}).get("figure"):
             out["figure"] = step.data["figure"]
+        image = (step.data or {}).get("image")
+        if image and _image_exists(image):
+            out["image"] = image
         cite = (step.data or {}).get("cite")
         if cite:
             # Solo si el material sigue en la biblioteca y tiene su PDF (un .md no se abre por página).
@@ -548,6 +558,12 @@ def public_step(db: Session, step: models.LessonStep, rng: Optional[random.Rando
             if m is not None and m.has_file:
                 out["cite"] = cite
     return out
+
+
+def _image_exists(image: dict) -> bool:
+    from . import materials  # aquí para no importar en círculo (materials → generator → learn)
+
+    return materials.image_file(image.get("material_id", 0), image.get("ref", "")) is not None
 
 
 def _num(v: Any) -> Optional[float]:

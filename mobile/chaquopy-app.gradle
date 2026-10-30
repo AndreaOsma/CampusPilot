@@ -1,0 +1,65 @@
+// Embedded FastAPI backend (Chaquopy) — real Python, on-device SQLite, no remote server
+// required. Applied onto android/app/build.gradle by build-android-ci.sh after `npx cap add
+// android` regenerates that (gitignored) directory from scratch — see this repo's mobile/
+// directory for the rest of the on-device backend glue (MainApplication.java,
+// mobile_launcher.py, network_security_config.xml).
+android {
+    defaultConfig {
+        // Only pydantic-core has been cross-compiled for arm64-v8a so far
+        // (dev/lib/native-packaging/), hence the single abiFilter.
+        ndk {
+            abiFilters "arm64-v8a"
+        }
+        python {
+            version "3.11"
+            // Alembic loads env.py / versions/*.py via raw file-path I/O (os.path.exists +
+            // importlib.util.spec_from_file_location), not a normal `import` statement — so
+            // Chaquopy's lazy, import-triggered asset extraction never puts real files on
+            // disk for them (unlike app/, which imports normally and extracts fine).
+            extractPackages "alembic"
+            pip {
+                // find-links, not extra-index-url: the latter expects a PyPI-style
+                // per-package index directory layout, a flat wheel dir just needs find-links.
+                // mobile/wheels (not dev/lib/native-packaging directly): the real Android
+                // build doesn't always run inside a full homelab monorepo checkout — see
+                // build-android-ci.sh's wheel-staging step, which populates this path in
+                // either case.
+                options "--find-links=../../mobile/wheels"
+                install "-r", "../../backend/requirements-android.txt"
+            }
+        }
+    }
+
+    sourceSets {
+        main {
+            python {
+                // ../../backend as a whole (not just backend/app) so alembic/ and
+                // alembic.ini land next to app/ at the same relative layout main.py's
+                // run_alembic_upgrade() already expects from the desktop build.
+                srcDirs = ["src/main/python", "../../backend"]
+                exclude "dist/**", ".venv*/**", "tests/**", "desktop/**", "scripts/**",
+                        "**/__pycache__/**", "**/.pytest_cache/**", "*.spec", "startup.sh",
+                        "pytest.ini", "requirements*.txt", "desktop_launcher.py"
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // Safe with Capacitor + Chaquopy: both ship their own consumer ProGuard rules
+            // (node_modules/@capacitor/android/capacitor/proguard-rules.pro,
+            // Chaquopy's own generated android/app/build/python/proguard-rules.pro —
+            // auto-merged by AGP, nothing to wire up by hand). Verified end-to-end on a
+            // real emulator after enabling this, not just that it compiles — see the
+            // build-android-ci.sh commit this landed with.
+            minifyEnabled true
+            shrinkResources true
+            // Native debug symbols (Chaquopy's libpython/libchaquopy_java .so files) —
+            // without this, a native crash on a real device shows an unsymbolicated,
+            // undebuggable stack trace in Play Console/Android Vitals.
+            ndk {
+                debugSymbolLevel "SYMBOL_TABLE"
+            }
+        }
+    }
+}

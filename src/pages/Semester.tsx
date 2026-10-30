@@ -6,6 +6,7 @@ import type { Navigate } from "../router";
 import { useStore } from "../store";
 import { Card, ConfirmDelete, Empty, ErrorBox, Field, FormStatus, Loading, Modal, PageHeader, useLoad, useSubmit, useUiMode } from "../ui";
 import { t } from "../i18n";
+import { CalendarDays, ChevronUp, Download, Icon } from "../vendor/icons";
 
 const WEEKS_SHOWN = 8;
 
@@ -147,7 +148,7 @@ function HabitsCard() {
                     );
                   })}
                   <td>
-                    <ConfirmDelete label="✕" onConfirm={() => void api.habits.remove(h.id).then(habits.reload)} />
+                    <ConfirmDelete label={t("Quitar")} onConfirm={() => void api.habits.remove(h.id).then(habits.reload)} />
                   </td>
                 </tr>
               ))}
@@ -260,7 +261,7 @@ export function Semester({ navigate }: { navigate: Navigate }) {
                 <h2 className="week__title">
                   {isHeavy && (
                     <span className="week__heavy" title={t("Semana cargada: {0}", { 0: isHeavy.join(", ") })}>
-                      ▲
+                      <Icon svg={ChevronUp} />
                     </span>
                   )}
                   {t("Semana del")} {fmtDate(week)}
@@ -278,7 +279,7 @@ export function Semester({ navigate }: { navigate: Navigate }) {
               </section>
             );
           })}
-          {weeks.every((w) => !w.items.length) && <Empty icon="🗓️" title={t("Nada en estas semanas")} />}
+          {weeks.every((w) => !w.items.length) && <Empty icon={CalendarDays} title={t("Nada en estas semanas")} />}
         </div>
       )}
 
@@ -287,7 +288,7 @@ export function Semester({ navigate }: { navigate: Navigate }) {
       <Card title={t("Calendario en tu app")} className="detail-only">
         <p className="small">
           <a className="btn btn--ghost btn--sm" href={api.calendarUrl} download="campus-pilot.ics">
-            {t("⬇ Descargar .ics")}
+            <Icon svg={Download} /> {t("Descargar .ics")}
           </a>{" "}
           {ical.data?.configured && ical.data.path ? (
             <>

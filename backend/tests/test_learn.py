@@ -112,7 +112,9 @@ def test_wrong_answers_go_to_review_and_xp_accumulates(client):
         step.due_on = date.today()
         db.commit()
     review = client.get("/api/learn/review").json()["steps"]
-    assert [s["id"] for s in review] == [sid]
+    # Primero la teoría de su lección y luego la pregunta fallada.
+    assert [s["kind"] for s in review] == ["info", "choice"] and review[0]["prompt"] == "Hola"
+    assert review[-1]["id"] == sid
 
 
 def test_complete_lesson_and_progress(client):

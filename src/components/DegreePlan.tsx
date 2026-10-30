@@ -6,6 +6,7 @@ import { useStore } from "../store";
 import { Card, Field, FormStatus, PageHeader, useSubmit } from "../ui";
 import { t } from "../i18n";
 import { useJobWatch } from "./Syllabus";
+import { Download, Icon, Sparkles } from "../vendor/icons";
 
 /** Módulos: crear la carrera desde el plan de estudios oficial (lo lee la IA de Ajustes). */
 export function DegreePlanCard({ navigate }: { navigate: Navigate }) {
@@ -33,7 +34,7 @@ export function DegreePlanCard({ navigate }: { navigate: Navigate }) {
         </div>
         <div className="form-actions">
           <button type="submit" className="btn btn--primary" disabled={!file || watching || state.status === "loading"}>
-            {watching ? t("Leyendo…") : t("✨ Leer plan de estudios")}
+            {watching ? t("Leyendo…") : <><Icon svg={Sparkles} /> {t("Leer plan de estudios")}</>}
           </button>
           <FormStatus state={state} />
           {job?.status === "error" && <p className="small text-crit">{job.error}</p>}
@@ -116,7 +117,7 @@ export function DegreeReview({ job, navigate }: { job: GenerationJob; navigate: 
             {t("Crear la carrera")}
           </button>
           <button type="button" className="btn btn--ghost" onClick={download}>
-            {t("⬇ Descargar módulo (.json)")}
+            <Icon svg={Download} /> {t("Descargar módulo (.json)")}
           </button>
           <FormStatus state={state} />
         </div>

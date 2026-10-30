@@ -3,6 +3,7 @@ import { fmtDate, relDays, todayIso } from "../lib/format";
 import { linkTo, type Navigate } from "../router";
 import { Card, useLoad } from "../ui";
 import { t } from "../i18n";
+import { Calendar, Icon, Repeat, Target } from "../vendor/icons";
 
 function ModuleRow({ m, navigate, late }: { m: WeekModule; navigate: Navigate; late?: boolean }) {
   return (
@@ -44,7 +45,7 @@ export function WeekPlanCard({ subjectId, navigate }: { subjectId: number; navig
         {p.deadlines.map((d) => (
           <li key={d.activity_id} className="week-item">
             <span>
-              📅 <strong>{d.name}</strong> <span className="muted small">· {relDays(d.date, today)} ({fmtDate(d.date)})</span>
+              <Icon svg={Calendar} /> <strong>{d.name}</strong> <span className="muted small">· {relDays(d.date, today)} ({fmtDate(d.date)})</span>
             </span>
           </li>
         ))}
@@ -52,7 +53,7 @@ export function WeekPlanCard({ subjectId, navigate }: { subjectId: number; navig
           p.course_id ? (
             <li key={o.code} className="week-item">
               <span>
-                🎯 <strong>{o.code}</strong> <span className="small">{o.text}</span> <span className="muted small">· {Math.round(o.mastery * 100)} %</span>
+                <Icon svg={Target} /> <strong>{o.code}</strong> <span className="small">{o.text}</span> <span className="muted small">· {Math.round(o.mastery * 100)} %</span>
               </span>
               <a className="btn btn--ghost btn--xs" href={`/aprender/practica/${p.course_id}/objetivo/${encodeURIComponent(o.code)}`}
                 onClick={linkTo(navigate, { name: "practice", courseId: p.course_id, concept: "", objective: o.code })}>
@@ -63,7 +64,7 @@ export function WeekPlanCard({ subjectId, navigate }: { subjectId: number; navig
         )}
         {p.due_reviews > 0 && (
           <li className="week-item">
-            <span>🔁 {t("{0} ejercicios para repasar", { 0: p.due_reviews })}</span>
+            <span><Icon svg={Repeat} /> {t("{0} ejercicios para repasar", { 0: p.due_reviews })}</span>
             <a className="btn btn--ghost btn--xs" href="/aprender/repaso" onClick={linkTo(navigate, { name: "review" })}>
               {t("Repasar")}
             </a>

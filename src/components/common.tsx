@@ -2,14 +2,15 @@ import type { AgendaItem, AiPolicy, Evaluation } from "../api";
 import { AI_POLICY, fmtDate, fmtGrade, monthShort, parseDate, relDays, subjectStyle, todayIso, urgency, weekdayShort } from "../lib/format";
 import { linkTo, type Navigate } from "../router";
 import { t } from "../i18n";
+import { Ban, CircleCheck, CircleHelp, Icon, TriangleAlert } from "../vendor/icons";
 
-const AI_ICON: Record<AiPolicy, string> = { unknown: "❔", allowed: "✅", limited: "⚠️", forbidden: "🚫" };
+const AI_ICON: Record<AiPolicy, string> = { unknown: CircleHelp, allowed: CircleCheck, limited: TriangleAlert, forbidden: Ban };
 
 /** Distintivo de política de IA. En "prohibida" es deliberadamente llamativo. */
 export function AiBadge({ policy, compact = false }: { policy: AiPolicy; compact?: boolean }) {
   return (
     <span className={`tag ai-badge ai-badge--${policy}`} title={AI_POLICY[policy]}>
-      <span aria-hidden>{AI_ICON[policy]}</span>
+      <Icon svg={AI_ICON[policy]} />
       {compact ? <span className="sr-only">{AI_POLICY[policy]}</span> : <span>{AI_POLICY[policy]}</span>}
     </span>
   );
@@ -64,8 +65,10 @@ export function AgendaRow({
   const open = isWindow && item.date <= today;
   const refDate = isWindow && open && item.end_date ? item.end_date : item.date;
   const level = item.done ? "normal" : urgency(refDate, today);
-  const rel = item.done ? t("✓ hecho") : open ? t("cierra {0}", { 0: relDays(item.end_date ?? item.date, today) }) : relDays(item.date, today);
-  const label = `${TYPE_LABEL[item.type] ? `${TYPE_LABEL[item.type]}: ` : ""}${item.title}`;
+  const rel = item.done ? t("hecho") : open ? t("cierra {0}", { 0: relDays(item.end_date ?? item.date, today) }) : relDays(item.date, today);
+  // Una ventana es el plazo de una actividad: antes de abrir dice cuándo se abre, y luego que está abierta.
+  const typeLabel = isWindow ? (open ? t("Abierta") : t("Se abre")) : TYPE_LABEL[item.type];
+  const label = `${typeLabel ? `${typeLabel}: ` : ""}${item.title}`;
 
   return (
     <li className={`agenda-row agenda-row--${item.type}${item.done ? " is-done" : ""}${open ? " is-open" : ""}`} style={subjectStyle(item.subject_id)}>
@@ -82,7 +85,7 @@ export function AgendaRow({
           {item.ai_forbidden && item.evaluable && <NoAiPill />}
         </div>
         <div className="agenda-row__meta small">
-          {TYPE_LABEL[item.type] && <span className="agenda-row__type">{TYPE_LABEL[item.type]}</span>}
+          {typeLabel && <span className="agenda-row__type">{typeLabel}</span>}
           {item.subject_name &&
             (navigate && item.subject_id ? (
               <a className="subj-chip" href={`/asignaturas/${item.subject_id}`} onClick={linkTo(navigate, { name: "subject", id: item.subject_id })}>

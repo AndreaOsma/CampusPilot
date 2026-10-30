@@ -6,9 +6,10 @@ import { termLabel } from "../lib/rules";
 import { useStore } from "../store";
 import { Card, ConfirmDelete, Empty, ErrorBox, Loading, Modal, PageHeader, useLoad, useUiMode } from "../ui";
 import { t } from "../i18n";
+import { Book, Briefcase, Building2, Compass, Handshake, Icon, Medal, Sparkles, Speech, Trophy, Wrench } from "../vendor/icons";
 
 const KIND_ICON: Record<PathKind, string> = {
-  course: "📘", certification: "🏅", project: "🛠️", internship: "🏢", job: "💼", language: "🗣️", volunteering: "🤝", award: "🏆", other: "✨",
+  course: Book, certification: Medal, project: Wrench, internship: Building2, job: Briefcase, language: Speech, volunteering: Handshake, award: Trophy, other: Sparkles,
 };
 const STATUS_ORDER: PathStatus[] = ["in_progress", "planned", "idea", "done", "dropped"];
 
@@ -127,7 +128,7 @@ export function PathPage() {
         <ErrorBox message={items.error} onRetry={items.reload} />
       ) : grouped.length === 0 ? (
         <Card>
-          <Empty icon="🧭" title={t("Tu trayectoria empieza aquí")}>
+          <Empty icon={Compass} title={t("Tu trayectoria empieza aquí")}>
             {t("Apunta un curso, una certificación o un proyecto propio: lo que haces por tu cuenta también cuenta.")}
           </Empty>
         </Card>
@@ -140,7 +141,7 @@ export function PathPage() {
                 {list.map((i) => (
                   <li key={i.id} className="path-item">
                     <span className="path-item__icon" aria-hidden>
-                      {KIND_ICON[i.kind]}
+                      <Icon svg={KIND_ICON[i.kind]} />
                     </span>
                     <div>
                       <button type="button" className="link-btn path-item__title" onClick={() => setModal({ item: i })}>

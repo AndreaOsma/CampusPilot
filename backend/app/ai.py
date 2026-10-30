@@ -172,8 +172,40 @@ class Resolved(BaseModel):
     source: Literal["settings", "server"]
 
 
+# Variables estándar, las mismas en todas las apps (dev/lib/ai-providers): AI_PROVIDER, AI_MODEL,
+# AI_MODEL_FAST (lo ligero), AI_BASE_URL y AI_API_KEY o AI_API_KEY_FILE (secreto montado).
+_ENV_ALIASES = {"claude-code": "claude_code", "claude_code": "claude_code", "claude": "anthropic", "anthropic": "anthropic",
+                "gemini": "gemini", "google": "gemini", "openrouter": "openrouter", "ollama": "ollama",
+                "openai": "openai_compatible", "openai-compatible": "openai_compatible", "openai_compatible": "openai_compatible",
+                "litellm": "openai_compatible", "vllm": "openai_compatible", "lmstudio": "openai_compatible",
+                "orquestador": "openai_compatible", "agentcraft": "openai_compatible"}
+
+
+def _env_resolved() -> Optional[Resolved]:
+    provider = _ENV_ALIASES.get((os.getenv("AI_PROVIDER") or "").strip().lower())
+    if not provider:
+        return None
+    key = (os.getenv("AI_API_KEY") or "").strip() or None
+    key_file = (os.getenv("AI_API_KEY_FILE") or "").strip()
+    if not key and key_file:
+        try:
+            key = Path(key_file).read_text(encoding="utf-8").strip() or None
+        except OSError:
+            key = None
+    if provider == "claude_code" and not key:
+        key = _env_token()
+    meta = PROVIDERS[provider]
+    model = (os.getenv("AI_MODEL") or "").strip()
+    fast = (os.getenv("AI_MODEL_FAST") or "").strip() or model
+    return Resolved(provider=provider, base_url=(os.getenv("AI_BASE_URL") or "").strip().rstrip("/") or meta.get("default_url", ""),
+                    models={"generator": model or meta["models"]["generator"], "inbox": fast or meta["models"]["inbox"]},
+                    key=key, source="server")
+
+
 def resolve(db: Session) -> Resolved:
     s = load(db)
+    if s.provider is None and (env := _env_resolved()):
+        return env
     if s.provider is None:
         # Sin configurar: lo que traiga el servidor (Claude Code con token o clave por entorno).
         defaults = PROVIDERS["claude_code"]["models"]
@@ -364,9 +396,13 @@ def _ollama(instructions: str, schema: dict, text: str, model: str, timeout: int
 
 
 def _openai_compatible(instructions: str, schema: dict, text: str, model: str, timeout: int, base_url: str, key: Optional[str]) -> dict:
+    # El esquema va también en las instrucciones: no todos los servidores compatibles (pasarelas,
+    # parte de los modelos de OpenRouter) aplican response_format, y sin verlo el modelo inventa
+    # los nombres de los campos (p. ej. 2026-10-26: 73 ejercicios descartados por «kind» ausente).
+    system = f"{instructions}\n\nDevuelve SOLO un objeto JSON que cumpla exactamente este esquema JSON (mismos nombres de campo):\n{json.dumps(schema, ensure_ascii=False)}"
     body = {
         "model": model,
-        "messages": [{"role": "system", "content": instructions}, {"role": "user", "content": text}],
+        "messages": [{"role": "system", "content": system}, {"role": "user", "content": text}],
         "response_format": {"type": "json_schema", "json_schema": {"name": "respuesta", "schema": schema}},
         "temperature": 0.2,
     }

@@ -8,6 +8,7 @@ import { AiSettingsCard } from "./AiSettingsCard";
 import { CareerRulesFields } from "./CareerRulesFields";
 import { LanguageSelect } from "./LanguageSelect";
 import { t } from "../i18n";
+import { Check, GraduationCap, Icon, Target, Upload } from "../vendor/icons";
 
 type Step = "university" | "rules" | "ai" | "done";
 const STEPS: { id: Step; label: string }[] = [
@@ -82,7 +83,7 @@ export function Onboarding({ navigate }: { navigate: Navigate }) {
         {STEPS.map((s, i) => (
           <li key={s.id} className={i < idx ? "is-done" : i === idx ? "is-current" : ""} aria-current={i === idx ? "step" : undefined}>
             <span className="onboarding__n" aria-hidden>
-              {i < idx ? "✓" : i + 1}
+              {i < idx ? <Icon svg={Check} /> : i + 1}
             </span>
             {s.label}
           </li>
@@ -115,7 +116,7 @@ export function Onboarding({ navigate }: { navigate: Navigate }) {
               </ul>
             )}
             <label className="btn btn--ghost file-btn">
-              {t("⬆ Subir un módulo (.json)")}
+              <Icon svg={Upload} /> {t("Subir un módulo (.json)")}
               <input type="file" accept="application/json,.json" className="sr-only" onChange={(e) => void fromFile(e.target.files?.[0])} />
             </label>
             <FormStatus state={install.state} />
@@ -181,10 +182,10 @@ export function Onboarding({ navigate }: { navigate: Navigate }) {
           <p>{t("Ya tienes tu carrera. Lo siguiente:")}</p>
           <div className="form-actions">
             <a className="btn btn--primary" href="/expediente" onClick={(e) => void go(e, { name: "career" })}>
-              {t("🎓 Ver mi expediente")}
+              <Icon svg={GraduationCap} /> {t("Ver mi expediente")}
             </a>
             <a className="btn btn--ghost" href="/aprender" onClick={(e) => void go(e, { name: "learn" })}>
-              {t("🎯 Aprender")}
+              <Icon svg={Target} /> {t("Aprender")}
             </a>
           </div>
         </Card>

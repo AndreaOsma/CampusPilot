@@ -38,3 +38,6 @@ packaging/out/
 .vite/
 xcuserdata/
 backend/.venv-desktop/
+
+# Capacitor: se regenera en cada build (la fuente versionada está en mobile/)
+android/

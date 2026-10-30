@@ -9,9 +9,9 @@ EXPORT = {"Authorization": "Bearer export-token-xyz"}
 
 def _mail(**extra):
     base = {
-        "message_id": "<abc@uoc.edu>",
-        "sender": "Aula de Matemáticas <aula@uoc.edu>",
-        "recipient": "uoc@example.com",
+        "message_id": "<abc@universidad.example>",
+        "sender": "Matemáticas I <profesorado@universidad.example>",
+        "recipient": "estudios@example.com",
         "subject": "Vídeo de comprobación de autoría",
         "date": "2026-10-05T09:30:00+02:00",
         "text": "Tienes del 8/10 al 11/10 para grabar el vídeo.",
@@ -22,7 +22,7 @@ def _mail(**extra):
 
 def _subject():
     with SessionLocal() as db:
-        career = models.Career(name="Teleco", institution="UOC")
+        career = models.Career(name="Teleco", institution="Universidad de Ejemplo")
         db.add(career)
         db.flush()
         subject = models.Subject(career_id=career.id, code="75.557", name="Álgebra", status="enrolled")
@@ -190,3 +190,15 @@ def test_pull_remote_disabled_without_config(monkeypatch):
 
     monkeypatch.setattr(config, "INBOX_PULL_URL", "")
     assert inbox.pull_remote() == []
+
+
+def test_paste_an_email_by_hand(client):
+    body = {"subject": "Recordatorio: cuestionario 3", "sender": "profe@uoc.edu", "text": "El cuestionario 3 se cierra el viernes 30 de octubre a las 23:59."}
+    r = client.post("/api/inbox", json=body)
+    assert r.status_code == 201, r.text
+    msg = r.json()
+    assert msg["title"] == "Recordatorio: cuestionario 3" and msg["sender"] == "profe@uoc.edu" and msg["status"] == "new"
+    again = client.post("/api/inbox", json=body)
+    assert again.json()["id"] == msg["id"]  # pegarlo dos veces no lo duplica
+    assert client.post("/api/inbox", json={"text": "   "}).status_code == 422
+    assert any(m["id"] == msg["id"] for m in client.get("/api/inbox").json())

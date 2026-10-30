@@ -7,12 +7,13 @@
 """
 from __future__ import annotations
 
+import hashlib
 import hmac
 import json
 from typing import Literal, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from .. import config, inbox, models
@@ -103,6 +104,33 @@ def list_messages(status: Optional[Literal["new", "read", "archived", "open"]] =
     if subject_id is not None:
         q = q.filter(models.InboxMessage.subject_id == subject_id)
     return [_out(m) for m in q.order_by(models.InboxMessage.received_at.desc(), models.InboxMessage.id.desc()).limit(500)]
+
+
+class PasteIn(BaseModel):
+    """Un correo pegado a mano (o compartido desde el móvil): para quien no tiene el Worker."""
+    subject: str = Field(default="", max_length=500)
+    sender: str = Field(default="", max_length=320)
+    text: str = Field(min_length=1, max_length=200_000)
+
+
+@api.post("", response_model=InboxOut, status_code=201)
+def paste_message(payload: PasteIn, background: BackgroundTasks, db: Session = Depends(get_db)):
+    """Añadir un correo pegando su texto: se guarda y se clasifica igual que uno reenviado.
+    Pegar dos veces el mismo correo no lo duplica (el id sale del contenido)."""
+    if not payload.text.strip():
+        raise HTTPException(status_code=422, detail="Pega el texto del correo")
+    digest = hashlib.sha256(f"{payload.subject.strip()}\n{payload.text.strip()}".encode()).hexdigest()[:32]
+    try:
+        msg, created = inbox.ingest(db, {"message_id": f"pegado-{digest}", "subject": payload.subject, "sender": payload.sender, "text": payload.text})
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    if created and msg.classify_status == "pending":
+        if inbox.should_classify(db):
+            background.add_task(inbox.classify, msg.id)
+        else:
+            msg.classify_status = "off"
+            db.commit()
+    return _out(msg)
 
 
 @api.get("/stats")

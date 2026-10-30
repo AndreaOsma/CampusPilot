@@ -418,6 +418,22 @@ class LessonStep(Base):
     lesson = relationship("Lesson", back_populates="steps")
 
 
+class ConceptCheck(Base):
+    """Comprobador Feynman: la explicación de un concepto con tus palabras y su valoración.
+    Una fila por intento, para ver la evolución por concepto (ver feynman.py)."""
+
+    __tablename__ = "concept_checks"
+
+    id = Column(Integer, primary_key=True)
+    course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
+    concept = Column(String(120), nullable=False)
+    # mastered / almost / review
+    rating = Column(String(12), nullable=False)
+    explanation = Column(Text, nullable=False)
+    feedback = Column(JSON, nullable=False, default=dict)
+    created_at = Column(DateTime, nullable=False, default=_now)
+
+
 class LearnDay(Base):
     """XP ganada por día: racha y meta diaria."""
 
@@ -525,4 +541,7 @@ class Material(Base):
     text = Column(Text, nullable=False)
     pages = Column(Integer, nullable=True)
     has_file = Column(Boolean, nullable=False, default=False)
+    # Qué fichero hay guardado: application/pdf (se abre por la página) o video/* (se ve en la app;
+    # su `text` es la transcripción, que es lo que lee la IA).
+    file_mime = Column(String(40), nullable=False, default="", server_default="")
     created_at = Column(DateTime, nullable=False, default=_now)

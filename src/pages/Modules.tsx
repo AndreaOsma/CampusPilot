@@ -6,14 +6,15 @@ import { linkTo, type Navigate } from "../router";
 import { useStore } from "../store";
 import { Card, Empty, ErrorBox, FormStatus, Loading, PageHeader, useLoad, useSubmit } from "../ui";
 import { t } from "../i18n";
+import { Brain, CalendarDays, Check, Compass, Download, Euro, Icon, Inbox, Puzzle, Target, Upload } from "../vendor/icons";
 
 const FEATURES: Array<{ id: ModuleId; icon: string; name: string; description: string }> = [
-  { id: "semestre", icon: "🗓️", name: "Semestre", description: t("Agenda de entregas y ventanas, semanas cargadas ▲, eventos, hábitos, feed iCal y avisos.") },
-  { id: "aprender", icon: "🎯", name: "Aprender", description: t("Lecciones paso a paso con ejercicios corregidos al momento, racha, XP y repaso de lo fallado.") },
-  { id: "estudio", icon: "🧠", name: "Estudio", description: t("Temporizador focus, horas reales frente a previstas y preguntas de repaso espaciado.") },
-  { id: "dinero", icon: "💶", name: "Dinero y trámites", description: t("Gastos, matrícula estimada, becas (con la media que piden) y trámites con plazo.") },
-  { id: "trayectoria", icon: "🧭", name: "Trayectoria", description: t("Cursos, certificaciones, proyectos, prácticas e idiomas, con sus competencias.") },
-  { id: "bandeja", icon: "📥", name: "Bandeja de la universidad", description: t("Correos de la universidad reenviados a la app, clasificados por asignatura, con las fechas que traen como propuestas para la agenda.") },
+  { id: "semestre", icon: CalendarDays, name: "Semestre", description: t("Agenda de entregas y ventanas, semanas cargadas, eventos, hábitos, feed iCal y avisos.") },
+  { id: "aprender", icon: Target, name: "Aprender", description: t("Lecciones paso a paso con ejercicios corregidos al momento, racha, XP y repaso de lo fallado.") },
+  { id: "estudio", icon: Brain, name: "Estudio", description: t("Temporizador focus, horas reales frente a previstas y preguntas de repaso espaciado.") },
+  { id: "dinero", icon: Euro, name: "Dinero y trámites", description: t("Gastos, matrícula estimada, becas (con la media que piden) y trámites con plazo.") },
+  { id: "trayectoria", icon: Compass, name: "Trayectoria", description: t("Cursos, certificaciones, proyectos, prácticas e idiomas, con sus competencias.") },
+  { id: "bandeja", icon: Inbox, name: "Bandeja de la universidad", description: t("Correos de la universidad reenviados a la app, clasificados por asignatura, con las fechas que traen como propuestas para la agenda.") },
 ];
 
 function PackCard({ pack, onChange, navigate }: { pack: PackSummary; onChange: () => void; navigate: Navigate }) {
@@ -69,7 +70,7 @@ function PackCard({ pack, onChange, navigate }: { pack: PackSummary; onChange: (
           </a>
         )}
         <a className="btn btn--ghost" href={api.packs.downloadUrl(pack.slug)} download={`${pack.slug}.json`}>
-          {t("⬇ JSON")}
+          <Icon svg={Download} /> {t("JSON")}
         </a>
       </div>
 
@@ -80,7 +81,7 @@ function PackCard({ pack, onChange, navigate }: { pack: PackSummary; onChange: (
             {pack.terms.map((term) => (
               <li key={term.ref} className="row-list__item">
                 <span>
-                  <strong>{term.label}</strong> <span className="muted small">· {term.subjects} {t("asignaturas")} {term.applied && t("· aplicado ✓")}</span>
+                  <strong>{term.label}</strong> <span className="muted small">· {term.subjects} {t("asignaturas")} {term.applied && <>{t("· aplicado")} <Icon svg={Check} /></>}</span>
                 </span>
                 <button
                   type="button"
@@ -157,7 +158,7 @@ export function Modules({ navigate }: { navigate: Navigate }) {
           {FEATURES.map((f) => (
             <li key={f.id} className="feature">
               <span className="feature__icon" aria-hidden>
-                {f.icon}
+                <Icon svg={f.icon} />
               </span>
               <div className="feature__body">
                 <label className="feature__name" htmlFor={`feat-${f.id}`}>
@@ -190,7 +191,7 @@ export function Modules({ navigate }: { navigate: Navigate }) {
         <ErrorBox message={packs.error} onRetry={packs.reload} />
       ) : (packs.data ?? []).length === 0 ? (
         <Card>
-          <Empty icon="🧩" title={t("No hay módulos en el catálogo de este servidor")} />
+          <Empty icon={Puzzle} title={t("No hay módulos en el catálogo de este servidor")} />
         </Card>
       ) : (
         (packs.data ?? []).map((p) => <PackCard key={p.slug} pack={p} onChange={() => void packs.reload()} navigate={navigate} />)
@@ -200,7 +201,7 @@ export function Modules({ navigate }: { navigate: Navigate }) {
 
       <Card title={t("Instalar un módulo desde archivo")}>
         <label className="btn btn--ghost file-btn">
-          {t("⬆ Elegir .json")}
+          <Icon svg={Upload} /> {t("Elegir .json")}
           <input type="file" accept="application/json,.json" className="sr-only" onChange={(e) => void onUpload(e.target.files?.[0])} />
         </label>
         <FormStatus state={uploadState.state} />

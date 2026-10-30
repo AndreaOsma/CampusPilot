@@ -3,8 +3,9 @@ import { api, type InboxKind, type InboxMessage } from "../api";
 import { DateBadge } from "../components/common";
 import { fmtDate } from "../lib/format";
 import { useStore } from "../store";
-import { Card, Empty, ErrorBox, FormStatus, Loading, PageHeader, useLoad, useSubmit, useUiMode } from "../ui";
+import { Card, Empty, ErrorBox, Field, FormStatus, Loading, PageHeader, useLoad, useSubmit, useUiMode } from "../ui";
 import { t } from "../i18n";
+import { Calendar, Check, Icon, Mailbox, Plus, TriangleAlert } from "../vendor/icons";
 
 const KIND: Record<InboxKind, string> = {
   announcement: t("Anuncio"),
@@ -55,7 +56,7 @@ function MessageCard({ msg, onChange }: { msg: InboxMessage; onChange: (m: Inbox
     >
       <p className="inbox-card__meta">
         <span className="tag">{KIND[msg.kind]}</span> {subject ? <span className="tag tag--ok">{subject.name}</span> : null}{" "}
-        {pending > 0 && <span className="tag">📅 {pending} {t("fecha")}{pending > 1 ? "s" : ""} {t("por revisar")}</span>}{" "}
+        {pending > 0 && <span className="tag"><Icon svg={Calendar} /> {pending} {t("fecha")}{pending > 1 ? "s" : ""} {t("por revisar")}</span>}{" "}
         {CLASSIFY[msg.classify_status] && <span className="muted">{CLASSIFY[msg.classify_status]}</span>}
       </p>
       {msg.summary ? <p>{msg.summary}</p> : !open && <p className="muted">{msg.body.slice(0, 180)}{msg.body.length > 180 ? "…" : ""}</p>}
@@ -79,7 +80,7 @@ function MessageCard({ msg, onChange }: { msg: InboxMessage; onChange: (m: Inbox
                   </button>
                 </span>
               ) : (
-                <span className="muted">{p.state === "accepted" ? t("✓ En la agenda") : t("Descartada")}</span>
+                <span className="muted">{p.state === "accepted" ? <><Icon svg={Check} /> {t("En la agenda")}</> : t("Descartada")}</span>
               )}
             </li>
           ))}
@@ -90,7 +91,7 @@ function MessageCard({ msg, onChange }: { msg: InboxMessage; onChange: (m: Inbox
         <>
           <p className="muted inbox-card__from">{t("De:")} {msg.sender}</p>
           <div className="inbox-card__body">{msg.body || t("(sin texto)")}</div>
-          {msg.classify_status === "error" && <p className="form-status form-status--error">⚠ {msg.classify_error}</p>}
+          {msg.classify_status === "error" && <p className="form-status form-status--error"><Icon svg={TriangleAlert} /> {msg.classify_error}</p>}
           <div className="form-actions">
             <label className="inline-label">
               {t("Asignatura")}{" "}
@@ -136,12 +137,51 @@ function MessageCard({ msg, onChange }: { msg: InboxMessage; onChange: (m: Inbox
   );
 }
 
+/** Añadir un correo pegando su texto (para quien no reenvía los correos a la app). */
+function PasteCard({ onAdded, open, setOpen }: { onAdded: (m: InboxMessage) => void; open: boolean; setOpen: (v: boolean) => void }) {
+  const [form, setForm] = useState({ subject: "", sender: "", text: "" });
+  const { state, run } = useSubmit();
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await run(() => api.inbox.paste(form), t("Correo añadido: la IA lo está leyendo"));
+    if (res) {
+      setForm({ subject: "", sender: "", text: "" });
+      onAdded(res);
+    }
+  };
+  if (!open) return null;
+  return (
+    <Card title={t("Añadir un correo")}>
+      <p className="muted small">
+        {t("Abre el correo de tu universidad, copia su texto y pégalo aquí. En el móvil, en Gmail: mantén pulsado el texto del correo → «Seleccionar todo» → «Copiar». La app lo lee, te dice de qué asignatura es y te propone las fechas que traiga.")}
+      </p>
+      <form className="form" onSubmit={submit}>
+        <div className="form-grid">
+          <Field label={t("Asunto")}>{(id) => <input id={id} value={form.subject} maxLength={500} onChange={(e) => setForm({ ...form, subject: e.target.value })} />}</Field>
+          <Field label={t("De (opcional)")}>{(id) => <input id={id} type="email" autoComplete="off" value={form.sender} maxLength={320} onChange={(e) => setForm({ ...form, sender: e.target.value })} />}</Field>
+          <Field label={t("Texto del correo")} wide>
+            {(id) => <textarea id={id} rows={8} required value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} />}
+          </Field>
+        </div>
+        <div className="form-actions">
+          <button type="submit" className="btn btn--primary" disabled={!form.text.trim() || state.status === "loading"}>
+            {state.status === "loading" ? t("Añadiendo…") : t("Añadir a la bandeja")}
+          </button>
+          <button type="button" className="btn btn--ghost" onClick={() => setOpen(false)}>{t("Cerrar")}</button>
+          <FormStatus state={state} />
+        </div>
+      </form>
+    </Card>
+  );
+}
+
 export function InboxPage() {
   const { careers } = useStore();
   const institution = (careers.find((c) => !c.archived) ?? careers[0])?.institution?.trim() ?? "";
   const [view, setView] = useState<"open" | "archived">("open");
   const list = useLoad(() => api.inbox.list(view), [view]);
   const stats = useLoad(() => api.inbox.stats());
+  const [pasting, setPasting] = useState(false);
 
   const replace = (id: number, next: InboxMessage | null) => {
     if (!list.data) return;
@@ -158,11 +198,25 @@ export function InboxPage() {
         title={institution ? t("Bandeja · {0}", { 0: institution }) : t("Bandeja de la universidad")}
         subtitle={t("Los correos de la universidad que reenvías a la app. Las fechas que traen no entran en la agenda hasta que las aceptas.")}
       />
-      {stats.data && !stats.data.ingest_configured && (
-        <div className="banner banner--warn" role="status">
-          {t("La entrada de correos no está configurada en el servidor (falta la URL o el token del Worker de la bandeja).")}
-        </div>
+      <div className="form-actions">
+        <button type="button" className="btn btn--primary" aria-expanded={pasting} onClick={() => setPasting(!pasting)}>
+          <Icon svg={Plus} /> {t("Añadir correo")}
+        </button>
+      </div>
+      {stats.data && !stats.data.ingest_configured && !pasting && (
+        <p className="muted small">
+          {t("Pega aquí los correos de tu universidad con «Añadir correo». (Si quien instala la app configura el reenvío automático, también llegan solos.)")}
+        </p>
       )}
+      <PasteCard
+        open={pasting}
+        setOpen={setPasting}
+        onAdded={(m) => {
+          setPasting(false);
+          if (view === "open") list.setData([m, ...(list.data ?? []).filter((x) => x.id !== m.id)]);
+          void stats.reload();
+        }}
+      />
       <div className="filters" role="group" aria-label={t("Qué correos ver")}>
         {(["open", "archived"] as const).map((v) => (
           <button key={v} type="button" className={`chip-btn${view === v ? " is-on" : ""}`} aria-pressed={view === v} onClick={() => setView(v)}>
@@ -173,8 +227,8 @@ export function InboxPage() {
       {list.loading && <Loading />}
       {list.error && <ErrorBox message={list.error} onRetry={list.reload} />}
       {list.data && list.data.length === 0 && (
-        <Empty icon="📭" title={view === "open" ? t("No hay correos pendientes") : t("No hay correos archivados")}>
-          {view === "open" ? t("Cuando llegue un correo reenviado de tu universidad aparecerá aquí.") : null}
+        <Empty icon={Mailbox} title={view === "open" ? t("No hay correos pendientes") : t("No hay correos archivados")}>
+          {view === "open" ? t("Pulsa «Añadir correo» y pega uno de tu universidad: aparecerá aquí con sus fechas propuestas.") : null}
         </Empty>
       )}
       {list.data?.map((msg) => (

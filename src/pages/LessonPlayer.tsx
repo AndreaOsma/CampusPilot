@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, type AnswerResult, type CompleteResult, type GameState, type LessonFull, type PublicStep } from "../api";
+import { FeynmanChecker } from "../components/Feynman";
 import { GuideModal } from "../components/Guide";
-import { InlineRich, RichText, TheoryFigure } from "../lib/rich";
+import { InlineRich, RichText, TheoryFigure, TheoryImage } from "../lib/rich";
 import { useSpeech } from "../lib/speech";
 import { WEEKDAYS } from "../lib/format";
 import { ComboFlash, EndScreen, PlayerFoot, PlayerTop, play, QuestionBubble, StreakScreen, vibrate } from "../vendor/learn-game";
@@ -9,10 +10,12 @@ import { linkTo, type Navigate } from "../router";
 import { useStore } from "../store";
 import { ErrorBox, Loading } from "../ui";
 import { t } from "../i18n";
+import { BadgeCheck, Book, BookOpen, Check, CircleHelp, CircleStop, Icon, Lightbulb, Volume2, X } from "../vendor/icons";
 
 export type PlayerMode =
   | { kind: "lesson"; lessonId: number }
   | { kind: "review" }
+  | { kind: "mixed"; courses: number[] }
   | { kind: "practice"; courseId: number; concept: string; objective?: string }
   | { kind: "exam"; courseId: number };
 
@@ -44,7 +47,7 @@ function instruction(step: PublicStep): string {
   if (k === "match") return t("Empareja cada par");
   if (k === "complex") return t("Escribe el resultado como a + bi");
   if (k === "numeric") return t("Escribe el resultado");
-  return step.kind === "info" ? t("📘 Teoría") : t("Lee con atención");
+  return step.kind === "info" ? t("Teoría") : t("Lee con atención");
 }
 
 function responseOf(step: PublicStep, d: Draft): unknown {
@@ -252,6 +255,7 @@ function StepInput({ step, draft, setDraft, locked }: { step: PublicStep; draft:
   return (
     <>
       {step.explanation && <RichText text={step.explanation} className="lp-info" />}
+      {step.image && <TheoryImage src={api.materials.imageUrl(step.image)} alt={step.image.alt} caption={step.image.caption} />}
       {step.figure && <TheoryFigure figure={step.figure} />}
     </>
   );
@@ -263,7 +267,7 @@ function ReadAloud({ text }: { text: string }) {
   if (!supported) return null;
   return (
     <button type="button" className="btn btn--ghost btn--sm lp-read" aria-pressed={speaking} onClick={() => (speaking ? stop() : speak(text))}>
-      {speaking ? t("⏹ Parar") : t("🔊 Escuchar")}
+      {speaking ? <><Icon svg={CircleStop} /> {t("Parar")}</> : <><Icon svg={Volume2} /> {t("Escuchar")}</>}
     </button>
   );
 }
@@ -290,6 +294,9 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
   const [workedSeen, setWorkedSeen] = useState(false);
   const [showWhy, setShowWhy] = useState(false);
   const [examRows, setExamRows] = useState<ExamRow[]>([]);
+  // Preguntas respondidas y falladas en la sesión: de ahí salen los conceptos del comprobador Feynman.
+  const [answeredIds, setAnsweredIds] = useState<number[]>([]);
+  const [missedIds, setMissedIds] = useState<number[]>([]);
   const [deadline, setDeadline] = useState<number | null>(null);
   const [now, setNow] = useState(Date.now());
   const [completion, setCompletion] = useState<CompleteResult | null>(null);
@@ -324,6 +331,8 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
         ? api.learn.lesson(mode.lessonId).then((l) => ({ steps: l.steps, lesson: l, title: l.title }))
         : mode.kind === "review"
           ? api.learn.review().then((r) => ({ steps: r.steps, lesson: null, title: t("Repaso de fallos") }))
+          : mode.kind === "mixed"
+            ? api.learn.mixed(mode.courses).then((r) => ({ steps: r.steps, lesson: null, title: t("Repaso mixto") }))
           : mode.kind === "practice"
             ? api.learn.practice(mode.courseId, mode.concept, mode.objective).then((r) => ({ steps: r.steps, lesson: null, title: r.title }))
             : api.learn.exam(mode.courseId).then((r) => ({ steps: r.steps, lesson: null, title: r.title, minutes: r.minutes }));
@@ -340,6 +349,8 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
         setXp(0);
         setCombo(0);
         setExamRows([]);
+        setAnsweredIds([]);
+        setMissedIds([]);
         setCompletion(null);
         setGameAfter(null);
         setDeadline(minutes ? Date.now() + minutes * 60_000 : null);
@@ -422,6 +433,8 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
         combo: combo + 1,
       });
       setXp((x) => x + r.xp);
+      setAnsweredIds((ids) => (ids.includes(current.step.id) ? ids : [...ids, current.step.id]));
+      if (!r.correct) setMissedIds((ids) => (ids.includes(current.step.id) ? ids : [...ids, current.step.id]));
       if (r.correct) {
         const c = combo + 1;
         setCombo(c);
@@ -499,7 +512,7 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
           >
             {lesson && (
               <button type="button" className="lp-icon" aria-label={t("Guía de la lección")} onClick={() => setGuideOpen(true)}>
-                📘
+                <Icon svg={Book} />
               </button>
             )}
           </PlayerTop>
@@ -512,12 +525,14 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
               <section className="lp-card">
                 <p className="lp-kicker">{t("Ejemplo resuelto")}</p>
                 <RichText text={current.step.worked!} className="lp-info" />
-                {current.step.source && <p className="lp-source">📖 {current.step.source}</p>}
+                {current.step.source && <p className="lp-source"><Icon svg={BookOpen} /> {current.step.source}</p>}
               </section>
             ) : (
               <section className="lp-card">
                 {!current.firstTry && <p className="lp-kicker lp-kicker--again">{t("Otra vez: este se te resistió")}</p>}
-                {mode.kind !== "lesson" && current.step.lesson_title && <p className="lp-kicker">{current.step.lesson_title}</p>}
+                {mode.kind !== "lesson" && current.step.lesson_title && (
+                  <p className="lp-kicker">{[current.step.course_title, current.step.lesson_title].filter(Boolean).join(" · ")}</p>
+                )}
                 <h1 className="lp-instruction">{instruction(current.step)}</h1>
                 {current.step.kind === "info" && <ReadAloud key={current.step.id} text={`${current.step.prompt}. ${current.step.explanation ?? ""}`} />}
                 <QuestionBubble mascot="pilo" mood={result ? (result.correct ? "cheer" : "sad") : "think"}>
@@ -528,12 +543,12 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
                   <div className="lp-hints">
                     {(current.step.hints ?? []).slice(0, hintsShown).map((h, i) => (
                       <p key={i} className="hint">
-                        💡 <InlineRich text={h} />
+                        <Icon svg={Lightbulb} /> <InlineRich text={h} />
                       </p>
                     ))}
                     {hintsShown < (current.step.hints ?? []).length && (
                       <button type="button" className="btn btn--ghost btn--sm" onClick={() => setHintsShown((n) => n + 1)}>
-                        💡 {hintsShown ? t("Otra pista") : t("Pista")}
+                        <Icon svg={Lightbulb} /> {hintsShown ? t("Otra pista") : t("Pista")}
                       </button>
                     )}
                   </div>
@@ -541,7 +556,7 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
                 {/* En la teoría, la fuente es lo que hay que ir a leer: siempre a la vista. */}
                 {current.step.source && (
                   <p className={`lp-source${current.step.kind === "info" ? "" : " detail-only"}`}>
-                    📖{" "}
+                    <Icon svg={BookOpen} />{" "}
                     {current.step.kind === "info" && current.step.cite ? (
                       <a href={api.materials.fileUrl(current.step.cite.material_id, current.step.cite.page)} target="_blank" rel="noreferrer">
                         {t("Amplíalo en el manual: {0}", { 0: current.step.source })}
@@ -569,7 +584,7 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
                 <>
                   <div className="lp-verdict" role="status" aria-live="polite">
                     <p className="lp-verdict__title">
-                      <span aria-hidden>{result.correct ? "✔" : "✖"}</span>{" "}
+                      <Icon svg={result.correct ? Check : X} />{" "}
                       {result.correct ? praise : result.confident_wrong ? t("Lo tenías claro… pero no") : t("Respuesta correcta:")}
                     </p>
                     {!result.correct && result.solution && (
@@ -590,7 +605,7 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
                     {showWhy && (
                       <div className="lp-verdict__expl">
                         {result.explanation && <RichText text={result.explanation} />}
-                        {result.source && <p className="small">📖 {result.source}</p>}
+                        {result.source && <p className="small"><Icon svg={BookOpen} /> {result.source}</p>}
                       </div>
                     )}
                   </div>
@@ -610,11 +625,11 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
                       <span className="lp-conf" role="group" aria-label={t("¿Lo tienes claro?")}>
                         <button type="button" aria-pressed={confidence === "high"} className={confidence === "high" ? "is-on" : ""} title={t("Lo tengo claro")}
                           onClick={() => setConfidence(confidence === "high" ? null : "high")}>
-                          😎
+                          <Icon svg={BadgeCheck} />
                         </button>
                         <button type="button" aria-pressed={confidence === "low"} className={confidence === "low" ? "is-on" : ""} title={t("Tengo dudas")}
                           onClick={() => setConfidence(confidence === "low" ? null : "low")}>
-                          🤔
+                          <Icon svg={CircleHelp} />
                         </button>
                       </span>
                     )}
@@ -644,7 +659,7 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
                   : t("Nada que repasar hoy")
           }
           stats={total > 0 ? { xp, accuracy, seconds: elapsed } : null}
-          note={completion?.chest_available ? t("🏅 ¡Unidad terminada! Recoge su insignia en el camino.") : null}
+          note={completion?.chest_available ? t("¡Unidad terminada! Recoge su insignia en el camino.") : null}
           actions={
             <>
             <button type="button" className="lp-btn lp-btn--go" autoFocus onClick={() => (celebrateStreak ? setPhase("streak") : navigate({ name: "learn" }))}>
@@ -658,12 +673,13 @@ export function LessonPlayer({ navigate, mode }: { navigate: Navigate; mode: Pla
             </>
           }
         >
+          {!isExam && answeredIds.length > 0 && <FeynmanChecker stepIds={answeredIds} missedIds={missedIds} />}
           {isExam && examRows.length > 0 && (
             <ol className="exam-results">
               {examRows.map((r, i) => (
                 <li key={i} className={r.result?.correct ? "is-ok" : "is-ko"}>
                   <div className="exam-results__q">
-                    <span aria-hidden>{r.result?.correct ? "✓" : r.skipped ? "—" : "✗"}</span> <RichText text={r.step.prompt} />
+                    {r.skipped ? <span aria-hidden>—</span> : <Icon svg={r.result?.correct ? Check : X} />} <RichText text={r.step.prompt} />
                   </div>
                   {!r.result?.correct && r.result?.solution && (
                     <div className="small">

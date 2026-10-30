@@ -72,6 +72,13 @@ app.include_router(ai.router)
 app.include_router(packs.router)
 app.include_router(settings.router)
 app.include_router(inbox.public)
+
+# Asistentes (ágora): /agent/v1, apagada sin CAMPUS_AGENT_TOKEN.
+from .agent_api.fastapi import create_agent_router  # noqa: E402
+from .agent_tools import agent  # noqa: E402
+from .database import get_db  # noqa: E402
+
+app.include_router(create_agent_router(agent, get_db))
 app.include_router(inbox.api)
 
 

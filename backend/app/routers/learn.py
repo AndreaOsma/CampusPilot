@@ -14,8 +14,9 @@ from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy.orm import Session
 
-from .. import anki, clock, config, degree_plan, game, generator, learn, materials, models, syllabus, tutor
+from .. import anki, clock, config, degree_plan, feynman, game, generator, learn, materials, models, syllabus, tutor
 from ..crud import get_or_404
+from ..learn_game import mixed as lg_mixed
 from ..database import get_db
 from ..schemas import UrlStr
 from ..settings_store import load_settings
@@ -281,18 +282,72 @@ def shop(item: str, db: Session = Depends(get_db)):
 
 @router.get("/review")
 def review(limit: int = 15, db: Session = Depends(get_db)):
-    """Pasos fallados cuyo repaso toca hoy (o antes), mezclados."""
+    """Pasos fallados cuyo repaso toca hoy (o antes), agrupados por lección: primero la teoría de esa
+    lección y luego sus preguntas (las lecciones, en orden aleatorio). La teoría no cuenta para `limit`."""
     today = clock.today()
     steps = (
         db.query(models.LessonStep)
-        .filter(models.LessonStep.box > 0, models.LessonStep.due_on <= today)
+        .filter(models.LessonStep.box > 0, models.LessonStep.due_on <= today, models.LessonStep.kind != "info")
         .order_by(models.LessonStep.box, models.LessonStep.due_on)
         .limit(max(1, min(limit, 50)))
         .all()
     )
+    # Si sobra sitio, también las preguntas de los conceptos que el comprobador Feynman dejó flojos.
+    steps += feynman.weak_due_steps(db, {s.id for s in steps}, max(1, min(limit, 50)) - len(steps))
     rng = random.Random()
-    rng.shuffle(steps)
-    return {"steps": [learn.public_step(db, s, rng) | {"lesson_title": s.lesson.title} for s in steps]}
+    by_lesson: dict[int, list[models.LessonStep]] = {}
+    for s in steps:
+        by_lesson.setdefault(s.lesson_id, []).append(s)
+    groups = list(by_lesson.values())
+    rng.shuffle(groups)
+    out = []
+    for group in groups:
+        lesson = group[0].lesson
+        theory = [s for s in sorted(lesson.steps, key=lambda s: s.position) if s.kind == "info"]
+        rng.shuffle(group)
+        out += [learn.public_step(db, s, rng) | {"lesson_title": lesson.title} for s in theory + group]
+    return {"steps": out}
+
+
+def _mixed_pool(db: Session) -> list[tuple[models.Course, str, list[models.LessonStep]]]:
+    """Por curso, las preguntas ya vistas: de lecciones terminadas o que ya se respondieron alguna vez."""
+    out = []
+    for course in db.query(models.Course).order_by(models.Course.id):
+        steps = [
+            s for u in course.units for lesson in u.lessons for s in lesson.steps
+            if s.kind != "info" and (lesson.completed_at or s.correct or s.wrong)
+        ]
+        subject = db.get(models.Subject, course.subject_id) if course.subject_id else None
+        out.append((course, subject.name if subject else course.title, steps))
+    return out
+
+
+@router.get("/mixed/groups")
+def mixed_groups(db: Session = Depends(get_db)):
+    """Asignaturas que pueden entrar en el repaso mixto, con cuántas preguntas vistas tiene cada una."""
+    return [{"id": c.id, "title": title, "count": len(steps)} for c, title, steps in _mixed_pool(db) if steps]
+
+
+@router.get("/mixed")
+def mixed(courses: str = "", n: int = lg_mixed.DEFAULT_N, db: Session = Depends(get_db)):
+    """Repaso mixto: preguntas al azar de asignaturas al azar, solo de lo ya visto (`courses`: ids separados por comas; vacío = todas)."""
+    wanted = {int(x) for x in courses.split(",") if x.strip().isdigit()}
+    today = clock.today()
+    found: dict[int, tuple[models.LessonStep, str]] = {}
+    candidates = []
+    for course, title, steps in _mixed_pool(db):
+        if wanted and course.id not in wanted:
+            continue
+        for s in steps:
+            found[s.id] = (s, title)
+            due = bool(s.box and s.due_on and s.due_on <= today)
+            candidates.append(lg_mixed.Candidate(s.id, course.id, s.correct, s.wrong, s.confident_wrong, due))
+    rng = random.Random()
+    out = []
+    for c in lg_mixed.pick(candidates, n, rng):
+        step, title = found[c.id]
+        out.append(learn.public_step(db, step, rng) | {"lesson_title": step.lesson.title, "course_title": title})
+    return {"title": "Repaso mixto", "steps": out}
 
 
 @router.get("/stats")
@@ -411,6 +466,7 @@ def _job_out(job: models.GenerationJob, with_draft: bool = False, db: Optional[S
         "steps": steps,
         "review": sum(1 for w in job.warnings if w.get("level") == "review"),
         "dropped": sum(1 for w in job.warnings if w.get("level") == "dropped"),
+        "no_theory": sum(1 for w in job.warnings if w.get("level") == "theory"),
         "cost_usd": job.cost_usd,
         # lessons: lecciones nuevas · theory: teoría para las lecciones que ya existen.
         "mode": draft.get("mode", "lessons"),
@@ -464,6 +520,46 @@ async def ask_tutor(payload: TutorIn, db: Session = Depends(get_db)):
     except Exception as exc:  # noqa: BLE001 — proveedor caído, tiempo agotado…
         logging.getLogger("campus.tutor").exception("tutor failed")
         raise HTTPException(status_code=502, detail=f"La IA no respondió: {str(exc)[:300]}")
+
+
+class FeynmanPickIn(BaseModel):
+    step_ids: list[int] = Field(max_length=200)
+    missed_ids: list[int] = Field(default_factory=list, max_length=200)
+
+
+class FeynmanCheckIn(BaseModel):
+    step_id: int
+    concept: str = Field(min_length=1, max_length=60)
+    explanation: str = Field(min_length=20, max_length=4000)
+
+
+@router.post("/feynman/pick")
+def feynman_pick(payload: FeynmanPickIn, db: Session = Depends(get_db)):
+    """Conceptos que ofrecer al acabar un repaso (vacío y `available: false` si no procede)."""
+    return feynman.pick(db, payload.step_ids, payload.missed_ids)
+
+
+@router.post("/feynman/check")
+async def feynman_check(payload: FeynmanCheckIn, db: Session = Depends(get_db)):
+    """Valora con la IA la explicación de un concepto (solo teoría de repaso) y guarda el intento."""
+    step = get_or_404(db, models.LessonStep, payload.step_id, "Paso")
+    st = generator.status(db)
+    if not st["enabled"]:
+        raise HTTPException(status_code=503, detail=f"La IA no está configurada: {st['reason']}. Configúrala en Ajustes → Inteligencia artificial.")
+    try:
+        return await run_in_threadpool(feynman.check, db, step, payload.concept, payload.explanation.strip())
+    except ValueError as exc:  # incluye feynman.Refused
+        raise HTTPException(status_code=422, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001 — proveedor caído, tiempo agotado…
+        logging.getLogger("campus.feynman").exception("feynman check failed")
+        raise HTTPException(status_code=502, detail=f"La IA no respondió: {str(exc)[:300]}")
+
+
+@router.get("/courses/{course_id}/feynman")
+def feynman_history(course_id: int, db: Session = Depends(get_db)):
+    """Evolución por concepto de las explicaciones del comprobador Feynman."""
+    get_or_404(db, models.Course, course_id, "Curso")
+    return feynman.history(db, course_id)
 
 
 @router.get("/generator/status")
@@ -522,6 +618,7 @@ async def generate(
             raise HTTPException(status_code=422, detail=str(exc))
         uploads.append((row.filename, row.text, None))
         cited[row.filename] = row.id
+    images: dict[int, dict[str, int]] = {}  # material → {ref de imagen: página}, las que ve la IA
     for name, text, pdf in uploads:
         total += len(text.encode("utf-8"))
         if total > config.MAX_MATERIAL_BYTES:
@@ -529,6 +626,12 @@ async def generate(
         if save and name not in cited:
             cited[name] = materials.save(db, subject, name, text, material_kind, module_ref, pdf).id
         names.append(name)
+        row = db.get(models.Material, cited[name]) if name in cited else None
+        if row is not None:
+            # Las imágenes del PDF (se sacan la primera vez: con un manual grande tarda unos segundos).
+            catalog = await run_in_threadpool(materials.image_catalog, row)
+            images[row.id] = {img["ref"]: img["page"] for img in catalog}
+            text = materials.generation_text(row, catalog)
         parts.append(f"===== MATERIAL: {name} =====\n{text}")
     job = models.GenerationJob(
         status="queued", subject_id=subject.id if subject else None, material_kind=material_kind,
@@ -540,9 +643,9 @@ async def generate(
     db.refresh(job)
     material = "\n\n".join(parts)
     if mode == "theory":
-        background.add_task(generator.run_theory_job, job.id, material, cited)
+        background.add_task(generator.run_theory_job, job.id, material, cited, images)
     else:
-        background.add_task(generator.run_job, job.id, material, module_ref, cited)
+        background.add_task(generator.run_job, job.id, material, module_ref, cited, images)
     return _job_out(job)
 
 

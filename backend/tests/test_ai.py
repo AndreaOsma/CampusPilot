@@ -125,3 +125,52 @@ def test_gemini_and_openrouter_need_the_user_key_and_use_their_url(client, provi
     assert con_clave["status"]["enabled"] is True and con_clave["status"]["source"] == "settings"
     assert client.post("/api/ai/test").status_code == 200
     assert seen["url"] == url and seen["auth"] == f"Bearer {SECRET}"
+
+
+def test_openai_compatible_sends_the_schema_in_the_instructions(client):
+    seen = {}
+
+    def handler(req):
+        seen["body"] = json.loads(req.content)
+        return httpx.Response(200, json={"choices": [{"message": {"content": "{\"ok\": true, \"saludo\": \"hola\"}"}}]})
+
+    mock(handler)
+    r = ai.Resolved(provider="openai_compatible", base_url="https://ia.example", models={"generator": "m", "inbox": "m"}, key="k", source="settings")
+    out, _ = ai.complete_json(r, "Instrucciones", ai.TEST_SCHEMA, "texto", "generator", 30)
+    assert out == {"ok": True, "saludo": "hola"}
+    system = seen["body"]["messages"][0]["content"]
+    assert system.startswith("Instrucciones") and '"saludo"' in system  # el esquema, con sus nombres de campo
+
+
+def test_connect_with_openrouter_pkce(client):
+    import base64
+    import hashlib
+    from urllib.parse import parse_qs, urlparse
+
+    from app.routers import ai as ai_router
+
+    start = client.post("/api/ai/openrouter/start", json={"callback_url": "https://campus.example/ajustes"})
+    assert start.status_code == 200
+    q = parse_qs(urlparse(start.json()["url"]).query)
+    assert start.json()["url"].startswith("https://openrouter.ai/auth?")
+    assert q["callback_url"] == ["https://campus.example/ajustes"] and q["code_challenge_method"] == ["S256"]
+    seen = {}
+
+    def handler(req):
+        seen["body"] = json.loads(req.content)
+        return httpx.Response(200, json={"key": "sk-or-v1-de-la-persona", "user_id": "u"})
+
+    mock(handler)
+    done = client.post("/api/ai/openrouter/finish", json={"code": "codigo-de-openrouter"})
+    assert done.status_code == 200, done.text
+    # El reto enviado corresponde al verificador que se manda al canjear (PKCE S256).
+    verifier = seen["body"]["code_verifier"]
+    expected = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
+    assert q["code_challenge"] == [expected] and seen["body"]["code"] == "codigo-de-openrouter"
+    data = done.json()
+    assert data["provider"] == "openrouter" and data["has_key"] is True and ai.stored_key() == "sk-or-v1-de-la-persona"
+    assert "sk-or" not in done.text  # la clave nunca vuelve al navegador
+    # Un segundo canje sin volver a empezar no vale (el verificador se gasta).
+    assert client.post("/api/ai/openrouter/finish", json={"code": "codigo-de-openrouter"}).status_code == 409
+    assert client.post("/api/ai/openrouter/start", json={"callback_url": "javascript:alert(1)"}).status_code == 422
+    ai_router._pending.clear()

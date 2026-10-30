@@ -9,6 +9,7 @@ export type Route =
   | { name: "learn" }
   | { name: "lesson"; id: number }
   | { name: "review" }
+  | { name: "mixed"; courses: number[] }
   | { name: "practice"; courseId: number; concept: string; objective?: string }
   | { name: "exam"; courseId: number }
   | { name: "draft"; id: number }
@@ -43,6 +44,8 @@ export function parsePath(pathname: string): Route {
   if (byObjective) return { name: "practice", courseId: Number(byObjective[1]), concept: "", objective: decodeURIComponent(byObjective[2]) };
   const practice = clean.match(/^\/aprender\/practica\/(\d+)(?:\/(.+))?$/);
   if (practice) return { name: "practice", courseId: Number(practice[1]), concept: practice[2] ? decodeURIComponent(practice[2]) : "" };
+  const mixed = clean.match(/^\/aprender\/mixto(?:\/([\d-]+))?$/);
+  if (mixed) return { name: "mixed", courses: mixed[1] ? mixed[1].split("-").map(Number).filter(Boolean) : [] };
   const exam = clean.match(/^\/aprender\/examen\/(\d+)$/);
   if (exam) return { name: "exam", courseId: Number(exam[1]) };
   const draft = clean.match(/^\/aprender\/borrador\/(\d+)$/);
@@ -55,6 +58,7 @@ export function pathFor(route: Route): string {
   if (route.name === "lesson") return `/aprender/leccion/${route.id}`;
   if (route.name === "practice" && route.objective) return `/aprender/practica/${route.courseId}/objetivo/${encodeURIComponent(route.objective)}`;
   if (route.name === "practice") return `/aprender/practica/${route.courseId}${route.concept ? `/${encodeURIComponent(route.concept)}` : ""}`;
+  if (route.name === "mixed") return `/aprender/mixto${route.courses.length ? `/${route.courses.join("-")}` : ""}`;
   if (route.name === "exam") return `/aprender/examen/${route.courseId}`;
   if (route.name === "draft") return `/aprender/borrador/${route.id}`;
   return Object.entries(STATIC).find(([, r]) => r.name === route.name)?.[0] ?? "/";

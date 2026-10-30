@@ -62,6 +62,14 @@ FIGURE_SCHEMA: dict[str, Any] = {
 }
 # Lo mismo para el generador de lecciones y el de teoría: cómo dibujar una figura.
 FIGURE_RULES = """Figuras: una tarjeta de teoría puede llevar "figure" cuando un dibujo enseña mejor que el texto (el plano complejo con un punto y su módulo y argumento, un diagrama de flujo, la estructura de un programa, una tabla de verdad como cuadrícula…). Como mucho una figura por lección; si no aporta, "figure": null. "figure" = {"svg": "<svg …>", "alt": "qué muestra, en una frase", "caption": "pie corto"}. El SVG: con viewBox (unos 360×240), sin width/height fijos, solo formas (path, line, circle, ellipse, rect, polygon, polyline), text/tspan, g y marker en defs para flechas; nada de script, style, image, foreignObject, enlaces ni CSS. Se ve sobre fondo blanco: trazos y texto oscuros (#1f2937), un color de acento (#2563eb) y otro para destacar (#dc2626); texto de 12 a 16 px con font-family="sans-serif" en el <svg>, en el idioma pedido, que no se corte. Exacto con el material: mismas cantidades, ejes con su etiqueta. Menos de 6 KB."""
+IMAGE_SCHEMA: dict[str, Any] = {
+    "type": ["object", "null"],
+    "properties": {"ref": {"type": "string"}, "alt": {"type": "string"}, "caption": {"type": "string"}},
+    "required": ["ref", "alt"],
+}
+# Imágenes del propio manual (ver materials.generation_text): la IA no las ve, solo sabe en qué
+# página están y qué se lee justo antes; la app comprueba que existen y que son de la página citada.
+IMAGE_RULES = """Imágenes del manual: al final de cada página del material pueden venir líneas «[imagen pN-K — aparece tras «…»]»: son las capturas, esquemas y diagramas de esa página, y el texto entre comillas es lo que se lee justo antes de la imagen. Cuando una tarjeta de teoría explica justo lo que muestra una de ellas (el esquema de un protocolo o una arquitectura, la captura de una herramienta o de un resultado, un diagrama), ponla en "image": {"ref": "pN-K", "alt": "qué muestra, en una frase", "caption": "pie corto"}: de la misma página que "page" (o la de al lado) y del mismo "material". No adivines: si no está claro que la imagen es de lo que explica la tarjeta, "image": null. Como mucho una imagen por tarjeta, y en las lecciones donde haya imágenes así, úsalas: enseñan mucho. Si la tarjeta lleva imagen del manual, no dibujes "figure"."""
 
 STEP_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -77,6 +85,7 @@ STEP_SCHEMA: dict[str, Any] = {
         "worked": {"type": "string"},
         "data": {"type": "object"},
         "figure": FIGURE_SCHEMA,
+        "image": IMAGE_SCHEMA,
         "material": {"type": "string"},
         "page": {"type": ["integer", "null"]},
     },
@@ -114,7 +123,7 @@ INSTRUCTIONS = """Eres el generador de ejercicios de estudio de Campus Pilot. Po
 Reglas (obligatorias):
 1. Usa únicamente el material recibido. Cada ejercicio sale de algo concreto del texto: un ejemplo resuelto, un ejercicio con solución, una definición, una propiedad o un procedimiento explicado. No inventes contenido que no esté.
 2. "source" en cada paso: la referencia exacta dentro del material (título o número de apartado y, si existe, número de ejemplo, ejercicio o página). Sin referencia no hay paso.
-3. Primero la teoría, luego las preguntas: cada lección empieza con 1 a 3 tarjetas "info" que enseñan, sacado del material, lo que hace falta para resolver sus ejercicios (definiciones, propiedades, el procedimiento paso a paso y, si lo hay, un ejemplo corto del propio material). En una tarjeta "info": "prompt" es el título de la tarjeta, "explanation" es el cuerpo (como mucho unas 120 palabras: listas "- ", **negrita** y fórmulas $…$), "data" es {} y "source" es el apartado exacto del material que hay que leer para ampliarla, "material" el nombre del material de donde sale (el de su cabecera «===== MATERIAL: … =====») y "page" la página (las marcas <!-- página N -->) si la hay, o null. Explica con tus palabras lo que dice el material; no añadas nada que no esté en él. "worked" solo para copiar fielmente la resolución de un ejemplo resuelto del material, con su referencia en "source".
+3. Primero la teoría, luego las preguntas. Ninguna lección sin teoría: cada una empieza con 2 a 4 tarjetas "info" que enseñan, sacado del material, todo lo que hace falta para entender y resolver sus ejercicios sin abrir el manual, como lo explicaría un buen profesor a quien lo ve por primera vez: qué es y para qué sirve, las definiciones exactas y la notación, las propiedades, el procedimiento paso a paso y un ejemplo resuelto del propio material, de lo básico a lo concreto. En una tarjeta "info": "prompt" es el título de la tarjeta, "explanation" es el cuerpo (de 100 a 250 palabras: párrafos cortos, listas "- ", **negrita** y fórmulas $…$), "data" es {} y "source" es el apartado exacto del material que hay que leer para ampliarla, "material" el nombre del material de donde sale (el de su cabecera «===== MATERIAL: … =====») y "page" la página (las marcas <!-- página N -->) si la hay, o null. Explica con tus palabras lo que dice el material; no añadas nada que no esté en él. "worked" solo para copiar fielmente la resolución de un ejemplo resuelto del material, con su referencia en "source". Cómo se redacta la teoría: como un buen libro de texto o un profesor que lo explica en voz alta a quien lo ve por primera vez, tuteando. Prosa clara y conectada, con frases completas, no apuntes telegráficos: cada tarjeta empieza con una frase que dice qué es y para qué sirve lo que viene, explica el porqué de cada paso y no solo el qué, y enlaza con la tarjeta anterior («Ahora que sabemos…»). Define cada símbolo y cada término la primera vez que aparece. El ejemplo se resuelve paso a paso, con los números del material y diciendo qué se hace en cada paso. Listas solo para pasos o casos de verdad, no para trocear una explicación. Si el material avisa de un error típico, cuéntalo al final («Cuidado:…»). Nada de abreviaturas ni de jerga sin explicar.
 4. Si el material es el enunciado de una actividad evaluable (PEC, práctica, reto, cuestionario, examen o similar), no generes nada: devuelve "units": [] y explica el motivo en "refusal".
 5. Idioma: {LANG}. Fórmulas en LaTeX entre $…$ (en JSON, escapa las barras: "\\\\frac").
 6. Agrupa por apartados del material: una unidad por bloque grande, lecciones cortas de 5 a 8 ejercicios (unos 3 minutos) además de su teoría, de lo fácil a lo difícil, variando los tipos de paso. "ref" en minúsculas con guiones.
@@ -133,6 +142,7 @@ Reglas (obligatorias):
 9. Calcula con cuidado: la app recalcula "verify" y descarta lo que no cuadre.
 10. Si al final viene el plan docente de la asignatura: que la teoría y los ejercicios trabajen sus objetivos de aprendizaje (los del módulo, si se indica), y en "objectives" de cada paso pon los códigos (O1, O2…) de los objetivos que practica. Sin plan docente, "objectives": [].
 11. """ + FIGURE_RULES + """
+12. """ + IMAGE_RULES + """
 """
 
 
@@ -186,9 +196,11 @@ def check_material(name: str, text: str, kind: str, subject: Optional[models.Sub
         raise ValueError(f"«{name}» contiene texto de un enunciado de actividad evaluable: no se usa para generar.")
 
 
-def clean_draft(payload: dict, codes: Optional[set[str]] = None, cited: Optional[dict[str, int]] = None) -> tuple[dict, list[dict]]:
+def clean_draft(payload: dict, codes: Optional[set[str]] = None, cited: Optional[dict[str, int]] = None,
+                images: Optional[dict[int, dict[str, int]]] = None) -> tuple[dict, list[dict]]:
     """Valida paso a paso; descarta lo inválido y marca lo que no verifica. (borrador, avisos).
-    `codes`: objetivos válidos del plan docente (los demás se quitan de cada paso)."""
+    `codes`: objetivos válidos del plan docente (los demás se quitan de cada paso).
+    `images`: id de material → {ref de imagen: página} (las que se le enseñaron a la IA)."""
     warnings: list[dict] = []
     units_out = []
     for u_i, unit in enumerate(payload.get("units") or []):
@@ -204,6 +216,7 @@ def clean_draft(payload: dict, codes: Optional[set[str]] = None, cited: Optional
                 if not isinstance(raw, dict):
                     continue
                 figure = raw.get("figure") if raw.get("kind") == "info" else None
+                image = raw.get("image") if raw.get("kind") == "info" and isinstance(raw.get("image"), dict) else None
                 # Teoría: de qué material de la biblioteca y qué página, para abrir el PDF ahí.
                 cite_id = (cited or {}).get(str(raw.get("material") or "")) if raw.get("kind") == "info" else None
                 page = raw.get("page") if isinstance(raw.get("page"), int) and 1 <= raw.get("page") <= 10000 else None
@@ -219,6 +232,17 @@ def clean_draft(payload: dict, codes: Optional[set[str]] = None, cited: Optional
                         warnings.append({"step": raw.get("ref"), "lesson": lesson.get("title"), "level": "figure", "message": f"Figura descartada: {exc}"})
                 if cite_id:
                     raw["data"]["cite"] = {"material_id": cite_id, "page": page}
+                if image:
+                    # Solo una imagen que existe, del material que cita la tarjeta y de su página (o la de al lado).
+                    ref = str(image.get("ref") or "").strip()
+                    img_page = (images or {}).get(cite_id or -1, {}).get(ref)
+                    if img_page is None or (page is not None and abs(img_page - page) > 1):
+                        warnings.append({"step": raw.get("ref"), "lesson": lesson.get("title"), "level": "figure",
+                                         "message": f"Imagen del manual descartada: «{ref}» no está en la página que cita la tarjeta"})
+                    else:
+                        alt = str(image.get("alt") or "").strip()[:300] or str(raw.get("prompt") or "")[:300]
+                        raw["data"]["image"] = {"material_id": cite_id, "ref": ref, "alt": alt, "caption": str(image.get("caption") or "").strip()[:200]}
+                        raw["data"].pop("figure", None)
                 if isinstance(raw.get("objectives"), list):
                     raw["objectives"] = [c for c in raw["objectives"] if isinstance(c, str) and c in (codes or set())]
                 raw["ref"] = _slug(str(raw.get("ref") or f"p{s_i + 1}"))
@@ -242,6 +266,9 @@ def clean_draft(payload: dict, codes: Optional[set[str]] = None, cited: Optional
                 steps_out.append(item)
             # Primero la teoría, luego las preguntas, aunque el modelo las mezcle.
             steps_out.sort(key=lambda x: x["kind"] != "info")
+            if steps_out and steps_out[0]["kind"] != "info":
+                warnings.append({"step": None, "lesson": lesson.get("title"), "level": "theory",
+                                 "message": "Lección sin teoría: genérala con «Teoría para las lecciones que ya tengo» antes de estudiarla"})
             if steps_out:
                 lessons_out.append({"ref": _slug(str(lesson.get("ref") or f"l{l_i + 1}")), "title": str(lesson.get("title") or "Lección")[:200], "steps": steps_out})
         if lessons_out:
@@ -256,7 +283,39 @@ def _slug(text: str) -> str:
     return s if s[0].isalnum() else f"x{s}"[:60]
 
 
-def run_job(job_id: int, material: str, module_ref: str = "", cited: Optional[dict[str, int]] = None) -> None:
+_HEADER_RE = re.compile(r"(===== MATERIAL: [^\n]* =====\n)")
+_PAGE_SPLIT_RE = re.compile(r"(?=<!-- página \d+ -->)")
+
+
+def split_material(text: str, limit: int) -> list[str]:
+    """Trozos de como mucho `limit` caracteres, cortados entre páginas; cada trozo repite la cabecera
+    de su material (es por lo que la IA lo cita). Una página más larga que el límite va sola."""
+    if len(text) <= limit:
+        return [text]
+    chunks: list[str] = []
+    current, header = "", ""
+    for block in _HEADER_RE.split(text):
+        if not block:
+            continue
+        if _HEADER_RE.fullmatch(block):
+            if current.strip() and current != header:
+                chunks.append(current)
+            header, current = block, block
+            continue
+        for page in _PAGE_SPLIT_RE.split(block):
+            if not page:
+                continue
+            if current != header and len(current) + len(page) > limit:
+                chunks.append(current)
+                current = header
+            current += page
+    if current.strip() and current != header:
+        chunks.append(current)
+    return chunks
+
+
+def run_job(job_id: int, material: str, module_ref: str = "", cited: Optional[dict[str, int]] = None,
+            images: Optional[dict[int, dict[str, int]]] = None) -> None:
     """Se ejecuta en segundo plano (hilo de FastAPI BackgroundTasks)."""
     with SessionLocal() as db:
         job = db.get(models.GenerationJob, job_id)
@@ -267,9 +326,35 @@ def run_job(job_id: int, material: str, module_ref: str = "", cited: Optional[di
         try:
             subject = db.get(models.Subject, job.subject_id) if job.subject_id else None
             plan = syllabus.prompt_block(subject, module_ref)
-            text = f"{material}\n\n{plan}" if plan else material
-            payload, cost = ai.complete_json(ai.resolve(db), i18n.prompt_lang(db, INSTRUCTIONS), OUTPUT_SCHEMA, text, "generator", config.GENERATOR_TIMEOUT_S)
-            draft, warnings = clean_draft(payload, syllabus.valid_codes(subject), cited)
+            parts = split_material(material, config.GENERATOR_CHUNK_CHARS)
+            units: list[dict] = []
+            warnings: list[dict] = []
+            cost: Optional[float] = None
+            refusal, last_error = None, None
+            for i, part in enumerate(parts, start=1):
+                text = f"{part}\n\n{plan}" if plan else part
+                try:
+                    payload, part_cost = ai.complete_json(ai.resolve(db), i18n.prompt_lang(db, INSTRUCTIONS), OUTPUT_SCHEMA, text, "generator", config.GENERATOR_TIMEOUT_S)
+                except Exception as exc:  # noqa: BLE001 — un trozo que falla no tira los demás
+                    last_error = exc
+                    if len(parts) == 1:
+                        raise
+                    warnings.append({"step": None, "lesson": None, "level": "dropped", "message": f"Parte {i} de {len(parts)} sin generar: {exc}"})
+                    continue
+                if part_cost is not None:
+                    cost = (cost or 0) + part_cost
+                d, w = clean_draft(payload, syllabus.valid_codes(subject), cited, images)
+                for u in d["units"]:
+                    if len(parts) > 1:
+                        u["ref"] = _slug(f"p{i}-{u['ref']}")
+                units += d["units"]
+                warnings += w
+                refusal = refusal or d.get("refusal")
+                if len(parts) > 1:
+                    # Progreso visible mientras tanto (el borrador definitivo se guarda al final).
+                    job.draft = {"units": units, "progress": f"{i}/{len(parts)}"}
+                    db.commit()
+            draft = {"units": units, "refusal": refusal or (str(last_error) if not units and last_error else None)}
             if module_ref and any(m["ref"] == module_ref for m in syllabus.modules_of(subject)):
                 draft["module_ref"] = module_ref
             job.draft, job.warnings, job.cost_usd = draft, warnings, cost
@@ -346,7 +431,7 @@ THEORY_SCHEMA: dict[str, Any] = {
                         "items": {
                             "type": "object",
                             "properties": {"title": {"type": "string"}, "body": {"type": "string"}, "source": {"type": "string"}, "figure": FIGURE_SCHEMA,
-                                           "material": {"type": "string"}, "page": {"type": ["integer", "null"]}},
+                                           "image": IMAGE_SCHEMA, "material": {"type": "string"}, "page": {"type": ["integer", "null"]}},
                             "required": ["title", "body", "source"],
                         },
                     },
@@ -362,13 +447,14 @@ THEORY_INSTRUCTIONS = """Eres el profesor de teoría de Campus Pilot. Por la ent
 
 Reglas (obligatorias):
 1. Usa únicamente el material recibido: explica con tus palabras lo que dice, sin añadir nada que no esté. Si una lección no tiene nada en el material, no la incluyas.
-2. De 1 a 3 tarjetas por lección, de lo básico a lo concreto, que cubran lo que piden sus ejercicios (definiciones, propiedades, el procedimiento paso a paso y, si lo hay, un ejemplo corto del propio material). No resuelvas los ejercicios de la lección.
-3. "title": el título de la tarjeta. "body": como mucho unas 120 palabras; listas "- ", **negrita** y fórmulas en LaTeX entre $…$ (en JSON, escapa las barras: "\\\\frac"). "source": el apartado exacto del material (título o número y, si existe, página) que hay que leer para ampliarla; "material": el nombre del material de su cabecera «===== MATERIAL: … =====»; "page": la página (marcas <!-- página N -->) o null.
+2. De 2 a 4 tarjetas por lección, de lo básico a lo concreto, que enseñen todo lo que piden sus ejercicios como lo explicaría un buen profesor a quien lo ve por primera vez, para poder entenderlos sin abrir el manual: qué es y para qué sirve, las definiciones exactas y la notación, las propiedades, el procedimiento paso a paso y un ejemplo resuelto del propio material. No resuelvas los ejercicios de la lección.
+3. "title": el título de la tarjeta, claro y concreto. "body": de 100 a 250 palabras, en párrafos cortos. Cómo se redacta la teoría: como un buen libro de texto o un profesor que lo explica en voz alta a quien lo ve por primera vez, tuteando. Prosa clara y conectada, con frases completas, no apuntes telegráficos: cada tarjeta empieza con una frase que dice qué es y para qué sirve lo que viene, explica el porqué de cada paso y no solo el qué, y enlaza con la tarjeta anterior («Ahora que sabemos…»). Define cada símbolo y cada término la primera vez que aparece. El ejemplo se resuelve paso a paso, con los números del material y diciendo qué se hace en cada paso. Listas solo para pasos o casos de verdad, no para trocear una explicación. Si el material avisa de un error típico, cuéntalo al final («Cuidado:…»). Nada de abreviaturas ni de jerga sin explicar. Formato: listas "- ", **negrita** y fórmulas en LaTeX entre $…$ (en JSON, escapa las barras: "\\\\frac"). "source": el apartado exacto del material (título o número y, si existe, página) que hay que leer para ampliarla; "material": el nombre del material de su cabecera «===== MATERIAL: … =====»; "page": la página (marcas <!-- página N -->) o null.
 4. "lesson": la clave tal cual aparece en la lista (p. ej. "L12").
 5. Si el material es el enunciado de una actividad evaluable (PEC, práctica, reto, cuestionario, examen o similar), no generes nada: devuelve "lessons": [] y explica el motivo en "refusal".
 6. Idioma: {LANG}.
 7. Si viene el plan docente de la asignatura: que la teoría cubra los objetivos de aprendizaje que trabajan los ejercicios de cada lección; en "objectives" pon sus códigos (O1, O2…) y en "module" el ref del módulo del temario al que pertenece la lección. Sin plan docente, "objectives": [] y "module": "".
 8. """ + FIGURE_RULES.replace("una tarjeta de teoría puede llevar", "una tarjeta puede llevar") + """
+9. """ + IMAGE_RULES + """
 """
 
 
@@ -388,7 +474,8 @@ def lessons_brief(lessons: list[models.Lesson]) -> str:
     return "\n".join(out)
 
 
-def clean_theory(payload: dict, lessons: list[models.Lesson], cited: Optional[dict[str, int]] = None) -> tuple[dict, list[dict]]:
+def clean_theory(payload: dict, lessons: list[models.Lesson], cited: Optional[dict[str, int]] = None,
+                 images: Optional[dict[int, dict[str, int]]] = None) -> tuple[dict, list[dict]]:
     """Convierte la respuesta en un borrador con forma de curso (unidad → lección → tarjetas)
     para revisarlo igual que uno de lecciones nuevas. Refs: u<id de unidad>, l<id de lección>."""
     by_key = {f"L{lesson.id}": lesson for lesson in lessons}
@@ -403,7 +490,7 @@ def clean_theory(payload: dict, lessons: list[models.Lesson], cited: Optional[di
             continue
         steps = [
             {"ref": f"{THEORY_PREFIX}{i + 1}", "kind": "info", "prompt": str(c.get("title", "")), "explanation": str(c.get("body", "")),
-             "source": str(c.get("source", "")), "data": {}, "figure": c.get("figure"), "material": c.get("material"), "page": c.get("page")}
+             "source": str(c.get("source", "")), "data": {}, "figure": c.get("figure"), "image": c.get("image"), "material": c.get("material"), "page": c.get("page")}
             for i, c in enumerate(x for x in item.get("cards") or [] if isinstance(x, dict))
         ]
         meta[f"l{lesson.id}"] = {
@@ -417,7 +504,7 @@ def clean_theory(payload: dict, lessons: list[models.Lesson], cited: Optional[di
     order = {lesson.id: i for i, lesson in enumerate(lessons)}
     for unit in units.values():
         unit["lessons"].sort(key=lambda x: order[int(x["ref"][1:])])
-    draft, warnings = clean_draft({"units": list(units.values()), "refusal": payload.get("refusal")}, codes, cited)
+    draft, warnings = clean_draft({"units": list(units.values()), "refusal": payload.get("refusal")}, codes, cited, images)
     # clean_draft rehace los refs con _slug; los de aquí ya son válidos y son las claves de vuelta.
     for u in draft["units"]:
         for l_d in u["lessons"]:
@@ -425,7 +512,8 @@ def clean_theory(payload: dict, lessons: list[models.Lesson], cited: Optional[di
     return {**draft, "mode": "theory"}, warnings
 
 
-def run_theory_job(job_id: int, material: str, cited: Optional[dict[str, int]] = None) -> None:
+def run_theory_job(job_id: int, material: str, cited: Optional[dict[str, int]] = None,
+                   images: Optional[dict[int, dict[str, int]]] = None) -> None:
     """Como run_job, para el modo teoría (hilo de BackgroundTasks)."""
     with SessionLocal() as db:
         job = db.get(models.GenerationJob, job_id)
@@ -438,9 +526,21 @@ def run_theory_job(job_id: int, material: str, cited: Optional[dict[str, int]] =
             lessons = subject_lessons(db, subject) if subject else []
             if not lessons:
                 raise RuntimeError("Esta asignatura aún no tiene lecciones")
-            text = "\n\n".join(x for x in (material, syllabus.prompt_block(subject), lessons_brief(lessons)) if x)
-            payload, cost = ai.complete_json(ai.resolve(db), i18n.prompt_lang(db, THEORY_INSTRUCTIONS), THEORY_SCHEMA, text, "generator", config.GENERATOR_TIMEOUT_S)
-            draft, warnings = clean_theory(payload, lessons, cited)
+            tail = "\n\n".join(x for x in (syllabus.prompt_block(subject), lessons_brief(lessons)) if x)
+            parts = split_material(material, max(20_000, config.GENERATOR_CHUNK_CHARS - len(tail)))
+            merged: dict[str, dict] = {}
+            cost: Optional[float] = None
+            refusal = None
+            for part in parts:
+                payload, part_cost = ai.complete_json(ai.resolve(db), i18n.prompt_lang(db, THEORY_INSTRUCTIONS), THEORY_SCHEMA,
+                                                      f"{part}\n\n{tail}", "generator", config.GENERATOR_TIMEOUT_S)
+                if part_cost is not None:
+                    cost = (cost or 0) + part_cost
+                refusal = refusal or payload.get("refusal")
+                for item in payload.get("lessons") or []:
+                    if isinstance(item, dict):
+                        merged.setdefault(str(item.get("lesson", "")).strip(), item)  # la primera teoría de cada lección
+            draft, warnings = clean_theory({"lessons": list(merged.values()), "refusal": refusal}, lessons, cited, images)
             job.draft, job.warnings, job.cost_usd = draft, warnings, cost
             if not draft["units"]:
                 job.status = "error"

@@ -4,6 +4,7 @@ import { todayIso } from "../lib/format";
 import { nextTerm, offeredShort, offeredWarning, planTermOptions, rulesOf, termClash, termLabel, termOf } from "../lib/rules";
 import { useStore } from "../store";
 import { t } from "../i18n";
+import { Icon, TriangleAlert } from "../vendor/icons";
 
 const NONE = "";
 const HIGH_LOAD = 30;
@@ -77,7 +78,7 @@ export function SemesterPlanner({ career, detailed }: { career: Career; detailed
   const plannedEcts = pending.filter((s) => s.planned_term).reduce((a, s) => a + s.ects, 0);
   const totalEcts = pending.reduce((a, s) => a + s.ects, 0);
 
-  if (pending.length === 0) return <p className="muted">{t("No te queda nada por planificar. 🎉")}</p>;
+  if (pending.length === 0) return <p className="muted">{t("No te queda nada por planificar.")}</p>;
 
   return (
     <div className="planner">
@@ -142,7 +143,7 @@ export function SemesterPlanner({ career, detailed }: { career: Career; detailed
                           </span>
                           {clash && (
                             <span className="planner__warn small" role="note">
-                              ⚠️ {offeredWarning(s.offered)}
+                              <Icon svg={TriangleAlert} /> {offeredWarning(s.offered)}
                             </span>
                           )}
                           <select

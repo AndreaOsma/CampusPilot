@@ -155,11 +155,11 @@ def test_scanned_or_fake_pdf_rejected(client, fake_claude):  # noqa: F811
 
 
 def test_personal_planned_term(client):
-    r = client.post("/api/packs/uoc-teleco/install").json()
+    r = client.post("/api/packs/ejemplo-grado/install").json()
     subj = next(s for s in client.get("/api/subjects", params={"career_id": r["career_id"]}).json() if s["name"] == "Física I")
     assert client.put(f"/api/subjects/{subj['id']}", json={**subj, "planned_term": "2027S2"}).status_code == 200
     assert client.put(f"/api/subjects/{subj['id']}", json={**subj, "planned_term": "otoño"}).status_code == 422
-    client.post("/api/packs/uoc-teleco/install")  # reinstalar no toca el plan personal
+    client.post("/api/packs/ejemplo-grado/install")  # reinstalar no toca el plan personal
     again = client.get(f"/api/subjects/{subj['id']}").json()
     assert again["planned_term"] == "2027S2"
     exported = json.dumps(client.get(f"/api/careers/{r['career_id']}/export-pack").json())

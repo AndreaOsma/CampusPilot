@@ -10,6 +10,7 @@ import { linkTo, type Navigate } from "../router";
 import { useStore } from "../store";
 import { Card, Empty, Field, FormStatus, Loading, Modal, PageHeader, ProgressBar, useLoad, useSubmit, useUiMode, writeStored } from "../ui";
 import { t } from "../i18n";
+import { Download, Icon, Library } from "../vendor/icons";
 
 const STATUS_FILTERS: Array<{ id: "all" | SubjectStatus | "todo"; label: string }> = [
   { id: "all", label: t("Todas") },
@@ -301,7 +302,7 @@ export function Career({ navigate }: { navigate: Navigate }) {
         }
       >
         {groups.length === 0 ? (
-          <Empty icon="📚" title={t("Nada con este filtro")} />
+          <Empty icon={Library} title={t("Nada con este filtro")} />
         ) : (
           groups.map(([label, rows]) => {
             const done = rows.filter((x) => x.status === "passed" || x.status === "convalidated").length;
@@ -383,7 +384,7 @@ export function Career({ navigate }: { navigate: Navigate }) {
           <FormStatus state={iosImport.state} />
           <p>
             <a className="btn btn--ghost btn--sm" href={api.exportPackUrl(career.id)} download={`${career.name}.json`}>
-              {t("⬇ Exportar como módulo de estudios")}
+              <Icon svg={Download} /> {t("Exportar como módulo de estudios")}
             </a>{" "}
             <span className="muted small">{t("Plan, reglas, grupos de evaluación y fechas, sin notas ni nada personal: para que otra persona de tu universidad lo instale.")}</span>
           </p>

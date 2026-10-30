@@ -1,5 +1,6 @@
 /* GENERADO desde dev/lib/learn-game (Homelab): no lo edites aquí, edita la librería y ejecuta su sync.mjs */
 import { type MouseEvent, type ReactNode } from "react";
+import { Check, Flame, GraduationCap, Icon, Lock, Medal, Sparkles, Star, TreePalm } from "../icons";
 import { dayIsOn, spanish, WEEKDAYS_ES, type GameState, type Tx } from "./types";
 
 function Card({ title, children, className = "" }: { title: ReactNode; children: ReactNode; className?: string }) {
@@ -21,14 +22,14 @@ export function GameBar({ game, children, tx = spanish }: { game: GameState | nu
       {game && (
         <span className="learn-bar__stats">
           <span className={`learn-stat learn-stat--streak${game.streak ? " is-on" : ""}`} title={tx("Días de racha")}>
-            🔥 {game.streak}
+            <Icon svg={Flame} /> {game.streak}
           </span>
           <span className="learn-stat learn-stat--gems" title={tx("Chispas")}>
-            ✨ {game.gems}
+            <Icon svg={Sparkles} /> {game.gems}
           </span>
           {game.streak_freezes > 0 && (
             <span className="learn-stat" title={tx("Días libres guardados")}>
-              🌴 {game.streak_freezes}
+              <Icon svg={TreePalm} /> {game.streak_freezes}
             </span>
           )}
         </span>
@@ -44,7 +45,7 @@ export function WeekDots({ game, weekdays = WEEKDAYS_ES, big = false }: { game: 
         <li key={d.date} className={dayIsOn(d) ? "is-on" : d.frozen ? "is-frozen" : d.future ? "is-future" : ""} title={d.date}>
           <span className="week-dots__day">{weekdays[i]}</span>
           <span className="week-dots__mark" aria-hidden>
-            {dayIsOn(d) ? "🔥" : d.frozen ? "🌴" : "·"}
+            {dayIsOn(d) ? <Icon svg={Flame} /> : d.frozen ? <Icon svg={TreePalm} /> : "·"}
           </span>
         </li>
       ))}
@@ -55,7 +56,7 @@ export function WeekDots({ game, weekdays = WEEKDAYS_ES, big = false }: { game: 
 export function StreakCard({ game, weekdays, tx = spanish }: { game: GameState; weekdays?: string[]; tx?: Tx }) {
   const pct = Math.min(1, game.goal ? game.today_xp / game.goal : 0);
   return (
-    <Card title={tx("🔥 {0} día{1} de racha", { 0: game.streak, 1: game.streak === 1 ? "" : "s" })}>
+    <Card title={<><Icon svg={Flame} /> {tx("{0} día{1} de racha", { 0: game.streak, 1: game.streak === 1 ? "" : "s" })}</>}>
       <WeekDots game={game} weekdays={weekdays} />
       <div className="goal-line">
         <span className="small">{tx("Meta diaria")}</span>
@@ -70,6 +71,7 @@ export function StreakCard({ game, weekdays, tx = spanish }: { game: GameState; 
   );
 }
 
+/** `icons`: icono de cada misión por id, como SVG de vendor/icons (p. ej. `{ xp: Zap, combo: Flame }`). */
 export function Quests({ game, onClaim, icons = {}, tx = spanish }: { game: GameState; onClaim: (id: string) => void; icons?: Record<string, string>; tx?: Tx }) {
   return (
     <Card title={tx("Misiones del día")}>
@@ -77,7 +79,7 @@ export function Quests({ game, onClaim, icons = {}, tx = spanish }: { game: Game
         {game.quests.map((q) => (
           <li key={q.id} className={`quest${q.done ? " is-done" : ""}`}>
             <span className="quest__icon" aria-hidden>
-              {icons[q.id] ?? "⭐"}
+              <Icon svg={icons[q.id] ?? Star} />
             </span>
             <div className="quest__body">
               <span className="quest__title">{q.title}</span>
@@ -90,14 +92,14 @@ export function Quests({ game, onClaim, icons = {}, tx = spanish }: { game: Game
             </div>
             {q.claimed ? (
               <span className="quest__reward is-claimed" title={tx("Recompensa cobrada")}>
-                ✓
+                <Icon svg={Check} label={tx("Recompensa cobrada")} />
               </span>
             ) : q.done ? (
               <button type="button" className="btn btn--sm quest__claim" onClick={() => onClaim(q.id)}>
-                +{q.gems} ✨
+                +{q.gems} <Icon svg={Sparkles} label={tx("chispas")} />
               </button>
             ) : (
-              <span className="quest__reward muted small">{q.gems} ✨</span>
+              <span className="quest__reward muted small">{q.gems} <Icon svg={Sparkles} label={tx("chispas")} /></span>
             )}
           </li>
         ))}
@@ -112,7 +114,7 @@ export function Shop({ game, onBuy, tx = spanish }: { game: GameState; onBuy: ()
     <Card title={tx("Canjear chispas")}>
       <div className="shop-item">
         <span className="shop-item__icon" aria-hidden>
-          🌴
+          <Icon svg={TreePalm} />
         </span>
         <div>
           <p className="shop-item__title">{tx("Día libre")}</p>
@@ -121,7 +123,7 @@ export function Shop({ game, onBuy, tx = spanish }: { game: GameState; onBuy: ()
           </p>
         </div>
         <button type="button" className="btn btn--sm shop-item__buy" disabled={full || game.gems < game.prices.freeze} onClick={onBuy}>
-          {full ? tx("Al máximo") : `${game.prices.freeze} ✨`}
+          {full ? tx("Al máximo") : <>{game.prices.freeze} <Icon svg={Sparkles} label={tx("chispas")} /></>}
         </button>
       </div>
     </Card>
@@ -197,7 +199,7 @@ export function PathView({
                 return (
                   <li key={l.id} className={`syl-row syl-row--${state}`}>
                     <span className="syl-row__mark" aria-hidden>
-                      {l.done ? "✓" : l.locked ? "" : number}
+                      {l.done ? <Icon svg={Check} /> : l.locked ? "" : number}
                     </span>
                     <div className="syl-row__body">
                       <p className="syl-row__title">
@@ -218,8 +220,8 @@ export function PathView({
                         </a>
                       )}
                       {l.locked && (
-                        <span className="syl-row__lock" role="img" aria-label={tx("Bloqueada")}>
-                          🔒
+                        <span className="syl-row__lock">
+                          <Icon svg={Lock} label={tx("Bloqueada")} />
                         </span>
                       )}
                       {!l.locked && extra?.(l)}
@@ -229,7 +231,7 @@ export function PathView({
               })}
               <li className={`syl-row syl-row--badge${u.done ? (u.badgeClaimed ? " is-claimed" : " is-ready") : ""}`}>
                 <span className="syl-row__mark" aria-hidden>
-                  {u.badgeClaimed ? "🎓" : "🏅"}
+                  <Icon svg={u.badgeClaimed ? GraduationCap : Medal} />
                 </span>
                 <div className="syl-row__body">
                   <p className="syl-row__title">{tx("Insignia de la unidad")}</p>

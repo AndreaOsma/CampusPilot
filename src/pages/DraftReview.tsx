@@ -1,15 +1,16 @@
 import { useMemo, useState } from "react";
-import { api, type DraftStep } from "../api";
-import { InlineRich, RichText, TheoryFigure } from "../lib/rich";
+import { api, type DraftStep, type ManualImage } from "../api";
+import { InlineRich, RichText, TheoryFigure, TheoryImage } from "../lib/rich";
 import { linkTo, type Navigate } from "../router";
 import { useStore } from "../store";
 import { PlanReview } from "../components/Syllabus";
 import { DegreeReview } from "../components/DegreePlan";
 import { Card, ErrorBox, Field, FormStatus, Loading, PageHeader, useLoad, useSubmit } from "../ui";
 import { t } from "../i18n";
+import { Book, BookOpen, Icon, Lightbulb, TriangleAlert } from "../vendor/icons";
 
 const KIND: Record<DraftStep["kind"], string> = {
-  info: t("📘 Teoría"),
+  info: t("Teoría"),
   choice: t("Opción múltiple"),
   truefalse: "Verdadero / falso",
   numeric: t("Numérico"),
@@ -96,7 +97,7 @@ export function DraftReview({ navigate, jobId }: { navigate: Navigate; jobId: nu
         }
       />
       <p className="banner banner--warn small">
-        {t("Revisa cada ejercicio: lo ha generado una IA a partir de tu material. Los marcados ⚠ no superaron la comprobación automática de la respuesta y empiezan desmarcados. Comprueba que la fuente citada existe en tu material.")}
+        {t("Revisa cada ejercicio: lo ha generado una IA a partir de tu material. Los marcados con la alerta no superaron la comprobación automática de la respuesta y empiezan desmarcados. Comprueba que la fuente citada existe en tu material.")}
       </p>
       {theory && <p className="muted small">{t("Cada lección recibe estas tarjetas delante de sus preguntas. Si ya tenía teoría puesta así, se sustituye; sus ejercicios no se tocan.")}</p>}
 
@@ -116,7 +117,7 @@ export function DraftReview({ navigate, jobId }: { navigate: Navigate; jobId: nu
                       </label>
                       <div className="draft-step__body">
                         <div className="muted small">
-                          {KIND[s.kind]} · 📖 {s.source}
+                          {KIND[s.kind]} · <Icon svg={BookOpen} /> {s.source}
                           {s.concepts.length > 0 && ` · ${s.concepts.join(", ")}`}
                         </div>
                         <RichText text={s.prompt} className="draft-step__prompt" />
@@ -135,11 +136,18 @@ export function DraftReview({ navigate, jobId }: { navigate: Navigate; jobId: nu
                           </p>
                         )}
                         {s.explanation && <RichText text={s.explanation} className="small muted" />}
+                        {s.kind === "info" && (s.data as { image?: ManualImage }).image && (
+                          <TheoryImage
+                            src={api.materials.imageUrl((s.data as { image: ManualImage }).image)}
+                            alt={(s.data as { image: ManualImage }).image.alt}
+                            caption={(s.data as { image: ManualImage }).image.caption}
+                          />
+                        )}
                         {s.kind === "info" && (s.data as { figure?: { svg: string; alt: string; caption?: string } }).figure && (
                           <TheoryFigure figure={(s.data as { figure: { svg: string; alt: string; caption?: string } }).figure} />
                         )}
-                        {s.hints.length > 0 && <p className="small muted">💡 {s.hints.join(" · ")}</p>}
-                        {s.flag && <p className="small text-crit">⚠ {s.flag}</p>}
+                        {s.hints.length > 0 && <p className="small muted"><Icon svg={Lightbulb} /> {s.hints.join(" · ")}</p>}
+                        {s.flag && <p className="small text-crit"><Icon svg={TriangleAlert} /> {s.flag}</p>}
                       </div>
                     </li>
                   );

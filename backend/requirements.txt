@@ -7,6 +7,8 @@ python-dotenv==1.2.2
 python-multipart==0.0.32
 httpx==0.28.1
 tzdata==2025.2
-pypdf==6.20.1
+pypdf==6.21.2
+# Imágenes de los manuales para la teoría de Aprender (sin Pillow, simplemente no hay).
+pillow==13.0.0
 anthropic==1.13.0
 cryptography==50.0.2

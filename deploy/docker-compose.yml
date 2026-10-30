@@ -37,6 +37,19 @@ services:
       # Bandeja de la universidad (opcional, ver inbox-worker/).
       CAMPUS_INBOX_PULL_URL: ${CAMPUS_INBOX_PULL_URL:-}
       CAMPUS_INBOX_PULL_TOKEN: ${CAMPUS_INBOX_PULL_TOKEN:-}
+      # Inteligencia artificial (opcional). Lo más fácil es no tocar nada aquí y, en la app,
+      # Ajustes → Inteligencia artificial → «Conectar con OpenRouter» (entras con tu cuenta y
+      # eliges modelo: Claude, GPT, Gemini o gratuitos). Lo que elijas en Ajustes manda sobre esto.
+      # Para dejarla puesta desde aquí:
+      #   AI_PROVIDER: openrouter | gemini | anthropic | ollama | openai (cualquier API compatible)
+      #   AI_API_KEY: tu clave (o AI_API_KEY_FILE con la ruta de un secreto montado)
+      #   AI_MODEL / AI_MODEL_FAST: modelo para generar lecciones / para la bandeja (vacío = por defecto)
+      #   AI_BASE_URL: solo para ollama u openai (p. ej. http://ollama:11434 o https://…/v1)
+      AI_PROVIDER: ${AI_PROVIDER:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_MODEL_FAST: ${AI_MODEL_FAST:-}
+      AI_BASE_URL: ${AI_BASE_URL:-}
       # Clave para cifrar la clave de la IA (Ajustes → IA). Vacía = se genera en /data/secret.key.
       CAMPUS_SECRET_KEY: ${CAMPUS_SECRET_KEY:-}
     volumes:

@@ -1,12 +1,15 @@
 /* Service worker de Campus Pilot: la app abre y enseña los últimos datos sin cobertura.
  *
- * - Navegación: red primero; sin red, el index.html cacheado (la SPA enruta sola).
+ * - Navegación: con conexión no se toca (la hace el navegador: si la sesión de Authelia ha
+ *   caducado, la redirección al login solo funciona así; Safari no acepta una redirección
+ *   devuelta por el service worker y la app se quedaba en blanco). Sin conexión, el
+ *   index.html cacheado (la SPA enruta sola). El shell se refresca en cada carga de página.
  * - /assets/*: caché primero (nombres con hash, inmutables).
  * - GET /api/*: red primero con copia en caché como respaldo (lectura sin cobertura).
  *   Las escrituras nunca pasan por aquí.
  * - Nunca se cachea una redirección (p. ej. al login de Authelia con la sesión caducada).
  */
-const VERSION = "campus-v1";
+const VERSION = "campus-v2";
 const SHELL = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon.svg"];
 // Descargas que deben venir siempre frescas del servidor.
 const NO_CACHE = ["/api/backup", "/api/calendar.ics", "/api/packs/", "/ical/"];
@@ -28,6 +31,18 @@ self.addEventListener("activate", (event) => {
       .then((keys) => Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
+});
+
+// La app avisa al cargar: se renueva la copia del shell para cuando no haya red (nunca se guarda
+// una redirección al login).
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "refresh-shell") {
+    event.waitUntil(
+      caches.open(VERSION).then((cache) =>
+        fetch("/", { credentials: "same-origin" }).then((res) => cacheable(res) && cache.put("/", res)).catch(() => undefined)
+      )
+    );
+  }
 });
 
 function cacheable(res) {
@@ -64,7 +79,8 @@ self.addEventListener("fetch", (event) => {
   if (NO_CACHE.some((p) => url.pathname.startsWith(p))) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(networkFirst(request, "/"));
+    if (self.navigator.onLine !== false) return;
+    event.respondWith(caches.open(VERSION).then((cache) => cache.match("/")).then((cached) => cached || fetch(request)));
   } else if (url.pathname.startsWith("/assets/")) {
     event.respondWith(cacheFirst(request));
   } else if (url.pathname.startsWith("/api/")) {

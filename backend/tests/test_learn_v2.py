@@ -195,11 +195,12 @@ def test_generator_end_to_end(client, fake_claude):
 
 def test_clean_draft_flags_wrong_angle_with_period():
     payload = {"units": [{"ref": "u", "title": "U", "lessons": [{"ref": "l", "title": "L", "steps": [
+        {"ref": "t", "kind": "info", "prompt": "El argumento", "source": "2.1", "explanation": "Así.", "data": {}},
         {"ref": "a", "kind": "numeric", "prompt": "arg", "source": "s", "explanation": "",
          "data": {"answer": -2.0944, "tolerance": 0.01, "period": 6.283185307, "verify": "4*pi/3"}},
     ]}]}]}
     draft, warnings = generator.clean_draft(payload)
-    assert warnings == [] and "flag" not in draft["units"][0]["lessons"][0]["steps"][0]
+    assert warnings == [] and "flag" not in draft["units"][0]["lessons"][0]["steps"][1]
 
 
 # ---------- Teoría antes de las preguntas ----------
@@ -213,6 +214,20 @@ def test_clean_draft_puts_theory_first_and_needs_source():
     draft, warnings = generator.clean_draft(payload)
     assert [s["ref"] for s in draft["units"][0]["lessons"][0]["steps"]] == ["t", "q"]
     assert [w["step"] for w in warnings] == ["t2"] and warnings[0]["level"] == "dropped"
+
+
+def test_clean_draft_warns_lesson_without_theory():
+    payload = {"units": [{"ref": "u", "title": "U", "lessons": [
+        {"ref": "sin", "title": "Solo preguntas", "steps": [
+            {"ref": "q", "kind": "truefalse", "prompt": "¿Sí?", "source": "1.1", "explanation": "", "data": {"answer": True}}]},
+        {"ref": "con", "title": "Con teoría", "steps": [
+            {"ref": "t", "kind": "info", "prompt": "Qué es", "source": "1.1", "explanation": "Así.", "data": {}},
+            {"ref": "q", "kind": "truefalse", "prompt": "¿Sí?", "source": "1.1", "explanation": "", "data": {"answer": True}}]},
+    ]}]}
+    draft, warnings = generator.clean_draft(payload)
+    assert len(draft["units"][0]["lessons"]) == 2  # se avisa, no se descarta
+    assert [(w["lesson"], w["level"]) for w in warnings] == [("Solo preguntas", "theory")]
+    assert "sin teoría" in warnings[0]["message"]
 
 
 def test_theory_for_existing_lessons(client, fake_claude, monkeypatch):

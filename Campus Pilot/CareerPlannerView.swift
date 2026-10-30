@@ -584,7 +584,7 @@ struct CareerPlannerView: View {
                 content.title = String(localized: "ui.planner.upcoming")
                 content.body = "\(activity.name) · \(String(format: String(localized: "ui.format.week"), activity.deliveryWeek))"
                 content.sound = .default
-                let req = UNNotificationRequest(identifier: "uoc.activity.\(index).\(activity.name)", content: content, trigger: trigger)
+                let req = UNNotificationRequest(identifier: "campus.activity.\(index).\(activity.name)", content: content, trigger: trigger)
                 center.add(req)
             }
         }

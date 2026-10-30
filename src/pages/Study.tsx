@@ -5,6 +5,7 @@ import { MathText } from "../lib/math";
 import { useStore } from "../store";
 import { Card, ConfirmDelete, Empty, ErrorBox, Field, FormStatus, Loading, PageHeader, ProgressBar, useLoad, useSubmit, useUiMode } from "../ui";
 import { t } from "../i18n";
+import { Brain, Check, Icon, Pause, Play, Timer, X } from "../vendor/icons";
 
 type Timer = { subjectId: number | null; goalMin: number; startedAt: number | null; accumulatedMs: number };
 const TIMER_KEY = "campus-focus";
@@ -51,7 +52,7 @@ function FocusTimer({ onSaved }: { onSaved: () => void }) {
   useEffect(() => {
     if (running && remainingMs === 0 && !notified.current) {
       notified.current = true;
-      document.title = t("⏰ Focus terminado · Campus Pilot");
+      document.title = t("Focus terminado · Campus Pilot");
     }
     if (remainingMs > 0) notified.current = false;
   }, [running, remainingMs]);
@@ -110,11 +111,11 @@ function FocusTimer({ onSaved }: { onSaved: () => void }) {
         <div className="form-actions">
           {running ? (
             <button type="button" className="btn btn--primary" onClick={pause}>
-              {t("⏸ Pausa")}
+              <Icon svg={Pause} /> {t("Pausa")}
             </button>
           ) : (
             <button type="button" className="btn btn--primary" onClick={start}>
-              ▶ {elapsedMs > 0 ? t("Seguir") : t("Empezar")}
+              <Icon svg={Play} /> {elapsedMs > 0 ? t("Seguir") : t("Empezar")}
             </button>
           )}
           <button type="button" className="btn btn--ghost" disabled={elapsedMs < 60_000} onClick={() => void save()}>
@@ -195,7 +196,7 @@ function Review({ onChange }: { onChange: () => void }) {
   if (due.error) return <ErrorBox message={due.error} onRetry={due.reload} />;
   if (!card)
     return (
-      <Empty icon="🧠" title={done ? t("¡Hecho! {0} pregunta{1} repasada{2}", { 0: done, 1: done > 1 ? "s" : "", 2: done > 1 ? "s" : "" }) : t("Nada que repasar hoy")}>
+      <Empty icon={Brain} title={done ? t("¡Hecho! {0} pregunta{1} repasada{2}", { 0: done, 1: done > 1 ? "s" : "", 2: done > 1 ? "s" : "" }) : t("Nada que repasar hoy")}>
         {done > 0 && (
           <button type="button" className="btn btn--ghost btn--sm" onClick={() => (setIndex(0), setDone(0), void due.reload())}>
             {t("Buscar más")}
@@ -216,10 +217,10 @@ function Review({ onChange }: { onChange: () => void }) {
       <p className="muted small">{t("Respóndela en voz alta o en papel, sin mirar. Luego evalúate con sinceridad:")}</p>
       <div className="form-actions">
         <button type="button" className="btn btn--primary" onClick={() => void answer(true)}>
-          {t("✓ La sabía")}
+          <Icon svg={Check} /> {t("La sabía")}
         </button>
         <button type="button" className="btn btn--ghost" onClick={() => void answer(false)}>
-          {t("✗ No / a medias")}
+          <Icon svg={X} /> {t("No / a medias")}
         </button>
       </div>
     </div>
@@ -310,7 +311,7 @@ function Decks({ version }: { version: number }) {
                 <span className="muted small">
                   {t("caja")} {c.box} · {fmtDate(c.due_on)}
                 </span>
-                <ConfirmDelete label="✕" onConfirm={() => void api.cards.remove(c.id).then(cards.reload)} />
+                <ConfirmDelete label={t("Quitar")} onConfirm={() => void api.cards.remove(c.id).then(cards.reload)} />
               </li>
             ))}
           </ul>
@@ -346,7 +347,7 @@ export function Study() {
         ) : stats.error ? (
           <ErrorBox message={stats.error} onRetry={stats.reload} />
         ) : !stats.data?.by_subject.length ? (
-          <Empty icon="⏱️" title={t("Aún no hay sesiones")}>
+          <Empty icon={Timer} title={t("Aún no hay sesiones")}>
             {t("Usa el focus o apunta sesiones a mano; si pones horas/semana previstas en cada asignatura verás si vas al día.")}
           </Empty>
         ) : (

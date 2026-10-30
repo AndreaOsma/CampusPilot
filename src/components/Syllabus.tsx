@@ -4,6 +4,7 @@ import { fmtDate } from "../lib/format";
 import { linkTo, type Navigate } from "../router";
 import { Card, ConfirmDelete, ErrorBox, Field, FormStatus, Loading, PageHeader, useLoad, useSubmit } from "../ui";
 import { t } from "../i18n";
+import { FileText, Icon, Sparkles } from "../vendor/icons";
 
 const KIND_LABEL: Record<ObjectiveKind, string> = {
   general: t("Objetivos generales"),
@@ -61,7 +62,7 @@ function PlanUpload({ subjectId, navigate, label }: { subjectId: number; navigat
       </div>
       <div className="form-actions">
         <button type="submit" className="btn btn--primary" disabled={!file || watching || state.status === "loading"}>
-          {watching ? t("Leyendo…") : t("✨ Leer plan docente")}
+          {watching ? t("Leyendo…") : <><Icon svg={Sparkles} /> {t("Leer plan docente")}</>}
         </button>
         <FormStatus state={state} />
         {job?.status === "error" && <p className="small text-crit">{job.error}</p>}
@@ -95,7 +96,7 @@ export function SyllabusCard({ subjectId, navigate }: { subjectId: number; navig
       </Card>
     );
   return (
-    <Card title={t("Plan docente")} actions={<span className="muted small">📄 {s.source}{s.imported_on ? ` · ${fmtDate(s.imported_on)}` : ""}</span>}>
+    <Card title={t("Plan docente")} actions={<span className="muted small"><Icon svg={FileText} /> {s.source}{s.imported_on ? ` · ${fmtDate(s.imported_on)}` : ""}</span>}>
       {s.summary && <p>{s.summary}</p>}
       <SyllabusBody s={s} navigate={navigate} />
       {s.resources.length > 0 && (

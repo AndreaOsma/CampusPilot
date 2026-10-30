@@ -74,8 +74,9 @@
 select.learn-bar__course { width: auto; min-height: 36px; padding: 4px 10px; }
 .learn-bar__stats { display: flex; gap: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .learn-stat--streak { color: var(--text-muted); }
-.learn-stat--streak.is-on { color: hsl(25 95% 50%); }
-.learn-stat--gems { color: hsl(200 85% 45%); }
+/* Contraste ≥4.5:1 en día y en noche (light-dark sigue al color-scheme de cada app). */
+.learn-stat--streak.is-on { color: light-dark(hsl(25 90% 36%), hsl(30 95% 62%)); }
+.learn-stat--gems { color: light-dark(hsl(200 85% 32%), hsl(200 85% 66%)); }
 .learn-layout { display: grid; grid-template-columns: 1fr; gap: 18px; }
 @media (min-width: 960px) {
   .learn-layout { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
@@ -97,7 +98,7 @@ select.learn-bar__course { width: auto; min-height: 36px; padding: 4px 10px; }
 }
 .syl-unit__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .syl-unit__titles { min-width: 0; }
-.syl-unit__kicker { margin: 0; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.syl-unit__kicker { margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
 .syl-unit__title { margin: 2px 0 0; font-size: 1.08rem; line-height: 1.3; }
 .syl-unit__count { flex-shrink: 0; font-size: 0.85rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-muted); }
 .syl-unit.is-done .syl-unit__count { color: var(--ok); }
@@ -127,12 +128,13 @@ select.learn-bar__course { width: auto; min-height: 36px; padding: 4px 10px; }
 }
 .syl-row--done .syl-row__mark { background: color-mix(in srgb, var(--ok) 14%, transparent); border-color: transparent; color: var(--ok); }
 .syl-row--current .syl-row__mark { background: var(--primary); border-color: var(--primary); color: var(--primary-ink, #fff); }
-.syl-row--locked { opacity: 0.6; }
+/* Sin opacidad: el texto tiene que seguir leyéndose (WCAG 1.4.3); el estado lo marcan el candado y el borde punteado. */
+.syl-row--locked .syl-row__title { color: var(--text-muted); }
 .syl-row--locked .syl-row__mark { border-style: dashed; }
 .syl-row__body { min-width: 0; }
 .syl-row__title { margin: 0; font-weight: 600; font-size: 0.95rem; line-height: 1.35; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
 .syl-row__next {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -161,16 +163,17 @@ select.learn-bar__course { width: auto; min-height: 36px; padding: 4px 10px; }
 .quest__bar { position: relative; display: block; height: 18px; margin-top: 4px; border-radius: 999px; background: var(--surface-soft); border: 1px solid var(--border-soft); overflow: hidden; }
 .quest__fill { display: block; height: 100%; background: var(--gold); border-radius: 999px; }
 .quest.is-done .quest__fill { background: var(--go); }
-.quest__count { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 800; }
+.quest__count { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; }
 .quest__claim { background: var(--gold); color: #1c1300; font-weight: 800; border: 0; border-radius: 999px; }
 .quest__reward.is-claimed { color: var(--go); font-weight: 900; }
 .week-dots { list-style: none; margin: 0 0 12px; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
 .week-dots li { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.week-dots__day { font-size: 0.72rem; font-weight: 800; color: var(--text-muted); }
+.week-dots__day { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); }
 .week-dots__mark { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--surface-soft); }
 .week-dots li.is-on .week-dots__mark { background: hsl(30 95% 88%); }
 .week-dots li.is-frozen .week-dots__mark { background: hsl(200 85% 88%); }
-.week-dots li.is-future { opacity: 0.45; }
+/* Los días que faltan, atenuados solo en el punto: la letra del día mantiene el contraste AA. */
+.week-dots li.is-future .week-dots__mark { opacity: 0.45; }
 .week-dots--big { max-width: 360px; margin: 16px auto; }
 .week-dots--big .week-dots__mark { width: 40px; height: 40px; font-size: 1.2rem; }
 .goal-line { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; }
@@ -200,6 +203,21 @@ select.learn-bar__course { width: auto; min-height: 36px; padding: 4px 10px; }
   box-shadow: var(--shadow-soft);
 }
 .practice-btn span { font-size: 1.4rem; }
+/* Repaso mixto */
+.mixed__groups { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.mixed__chip {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--border-soft);
+  background: var(--surface-soft);
+  color: var(--text-main);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mixed__chip.is-on { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 14%, transparent); }
+.mixed__start { width: 100%; min-height: 44px; justify-content: center; margin-top: 4px; }
 .toast--reward { font-weight: 900; font-size: 1.05rem; }
 
 /* Reproductor */
@@ -222,6 +240,11 @@ select.learn-bar__course { width: auto; min-height: 36px; padding: 4px 10px; }
   cursor: pointer;
   padding: 4px 6px;
   border-radius: 8px;
+  /* Zona táctil de 44 px (Apple HIG / WCAG 2.5.8). */
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-grid;
+  place-items: center;
 }
 .lp-bar { flex: 1; height: 6px; border-radius: 3px; background: var(--surface-soft); overflow: hidden; }
 .lp-bar__fill {
@@ -231,8 +254,8 @@ select.learn-bar__course { width: auto; min-height: 36px; padding: 4px 10px; }
   transition: width 0.35s ease;
 }
 .lp-bar.is-hot .lp-bar__fill { background: linear-gradient(90deg, var(--primary), var(--gold)); }
-.lp-xp, .lp-clock { font-weight: 900; font-variant-numeric: tabular-nums; color: var(--gold-dark); min-width: 3rem; text-align: right; }
-.theme-dark .lp-xp { color: var(--gold); }
+/* light-dark: sirve con cualquier mecanismo de tema (clase o data-theme) siempre que fije color-scheme. */
+.lp-xp, .lp-clock { font-weight: 900; font-variant-numeric: tabular-nums; color: light-dark(hsl(38 90% 30%), var(--gold)); min-width: 3rem; text-align: right; }
 .lp-title { max-width: 900px; width: 100%; margin: 0 auto; padding: 0 16px; }
 .lp-combo {
   position: fixed;
@@ -528,3 +551,24 @@ select.learn-bar__course { width: auto; min-height: 36px; padding: 4px 10px; }
 .ruti__led--gold { fill: var(--gold); opacity: 0.9; }
 .ruti__led--on { fill: var(--ok); opacity: 1; }
 .mascot--sad .ruti__led--on { fill: var(--bad); }
+
+/* UX táctil (2026-10-17, 2ª pasada) */
+@media (max-width: 768px), (pointer: coarse) {
+  select.learn-bar__course { min-height: 44px; }
+}
+
+/* Lechuza (Clío) */
+.lechuza__body, .lechuza__wing { fill: hsl(30 32% 44%); }
+.lechuza__wing { fill: hsl(28 30% 36%); }
+.lechuza__belly { fill: hsl(36 48% 78%); }
+.lechuza__face { fill: hsl(38 50% 86%); }
+.lechuza__line { fill: none; stroke: hsl(28 30% 46%); stroke-width: 1.6; stroke-linecap: round; }
+.lechuza__iris { fill: hsl(42 90% 55%); }
+.lechuza__pupil { fill: #1d140d; }
+.lechuza__eyeline { stroke: #1d140d; }
+.lechuza__beak { fill: hsl(36 80% 50%); stroke: hsl(30 60% 34%); stroke-width: 1; stroke-linejoin: round; }
+.lechuza__laurel { fill: hsl(110 35% 42%); }
+.lechuza__laurel-stem { fill: none; stroke: hsl(110 30% 32%); stroke-width: 1.6; }
+.lechuza__star { fill: hsl(48 95% 62%); }
+.theme-dark .lechuza__body { fill: hsl(30 30% 52%); }
+.theme-dark .lechuza__wing { fill: hsl(28 28% 44%); }

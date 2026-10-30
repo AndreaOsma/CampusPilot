@@ -6,6 +6,7 @@ import { linkTo, pathFor, useRoute, type Route } from "./router";
 import { useStore } from "./store";
 import { ErrorBox, Loading, readStored, UiModeContext, writeStored, type UiMode } from "./ui";
 import { t } from "./i18n";
+import { Brain, CalendarDays, Compass, Euro, GraduationCap, House, Icon, Inbox, Menu, Puzzle, Settings as SettingsIcon, Target } from "./vendor/icons";
 
 // Cada página en su propio trozo: el primer arranque solo baja «Hoy» (KaTeX, Aprender… bajo demanda).
 const Career = lazy(() => import("./pages/Career").then((m) => ({ default: m.Career })));
@@ -24,21 +25,21 @@ const SubjectDetail = lazy(() => import("./pages/SubjectDetail").then((m) => ({ 
 type NavItem = { route: Route; label: string; icon: string; primary?: boolean; module?: ModuleId };
 
 const NAV: NavItem[] = [
-  { route: { name: "home" }, label: t("Hoy"), icon: "🏠", primary: true },
-  { route: { name: "career" }, label: t("Expediente"), icon: "🎓", primary: true },
-  { route: { name: "semester" }, label: t("Semestre"), icon: "🗓️", primary: true, module: "semestre" },
-  { route: { name: "learn" }, label: t("Aprender"), icon: "🎯", primary: true, module: "aprender" },
-  { route: { name: "inbox" }, label: t("Bandeja"), icon: "📥", module: "bandeja" },
-  { route: { name: "study" }, label: t("Estudio"), icon: "🧠", module: "estudio" },
-  { route: { name: "money" }, label: t("Dinero y trámites"), icon: "💶", module: "dinero" },
-  { route: { name: "path" }, label: t("Trayectoria"), icon: "🧭", module: "trayectoria" },
-  { route: { name: "modules" }, label: t("Módulos"), icon: "🧩" },
-  { route: { name: "settings" }, label: t("Ajustes"), icon: "⚙️" },
+  { route: { name: "home" }, label: t("Hoy"), icon: House, primary: true },
+  { route: { name: "career" }, label: t("Expediente"), icon: GraduationCap, primary: true },
+  { route: { name: "semester" }, label: t("Semestre"), icon: CalendarDays, primary: true, module: "semestre" },
+  { route: { name: "learn" }, label: t("Aprender"), icon: Target, primary: true, module: "aprender" },
+  { route: { name: "inbox" }, label: t("Bandeja"), icon: Inbox, module: "bandeja" },
+  { route: { name: "study" }, label: t("Estudio"), icon: Brain, module: "estudio" },
+  { route: { name: "money" }, label: t("Dinero y trámites"), icon: Euro, module: "dinero" },
+  { route: { name: "path" }, label: t("Trayectoria"), icon: Compass, module: "trayectoria" },
+  { route: { name: "modules" }, label: t("Módulos"), icon: Puzzle },
+  { route: { name: "settings" }, label: t("Ajustes"), icon: SettingsIcon },
 ];
 
 function sectionOf(route: Route): Route["name"] {
   if (route.name === "subject") return "career";
-  if (["lesson", "review", "practice", "exam", "draft"].includes(route.name)) return "learn";
+  if (["lesson", "review", "mixed", "practice", "exam", "draft"].includes(route.name)) return "learn";
   return route.name;
 }
 
@@ -110,7 +111,7 @@ export default function App() {
       onClick={linkTo(navigate, item.route)}
     >
       <span aria-hidden className={`${className}__icon`}>
-        {item.icon}
+        <Icon svg={item.icon} />
       </span>
       <span className={`${className}__label`}>{item.label}</span>
     </a>
@@ -119,14 +120,14 @@ export default function App() {
   return (
     <UiModeContext.Provider value={uiMode}>
       <div
-        className={`app-shell ${effectiveDark ? "theme-dark" : "theme-light"} mode-${uiMode}${["lesson", "review", "practice", "exam"].includes(route.name) ? " is-focus" : ""}`}
+        className={`app-shell ${effectiveDark ? "theme-dark" : "theme-light"} mode-${uiMode}${["lesson", "review", "mixed", "practice", "exam"].includes(route.name) ? " is-focus" : ""}`}
       >
         <a href="#main" className="skip-link">
           {t("Saltar al contenido")}
         </a>
         <header className="app-header">
-          <a href="/" className="app-header__brand" onClick={linkTo(navigate, { name: "home" })}>
-            <span aria-hidden>🎓</span> {t("Campus Pilot")}
+          <a href="/" className="app-header__brand ds-display" onClick={linkTo(navigate, { name: "home" })}>
+            <span aria-hidden><Icon svg={GraduationCap} /></span> <span className="app-header__name">{t("Campus Pilot")}</span>
           </a>
           <nav className="top-nav" aria-label={t("Secciones")}>
             {nav.map((item) => navLink(item, "top-nav__link"))}
@@ -165,6 +166,7 @@ export default function App() {
               {route.name === "learn" && <Learn navigate={navigate} />}
               {route.name === "lesson" && <LessonPlayer navigate={navigate} mode={{ kind: "lesson", lessonId: route.id }} />}
               {route.name === "review" && <LessonPlayer navigate={navigate} mode={{ kind: "review" }} />}
+              {route.name === "mixed" && <LessonPlayer navigate={navigate} mode={{ kind: "mixed", courses: route.courses }} />}
               {route.name === "practice" && (
                 <LessonPlayer navigate={navigate} mode={{ kind: "practice", courseId: route.courseId, concept: route.concept, objective: route.objective }} />
               )}
@@ -201,7 +203,7 @@ export default function App() {
             onClick={() => setMoreOpen((v) => !v)}
           >
             <span aria-hidden className="bottom-nav__link__icon">
-              ☰
+              <Icon svg={Menu} />
             </span>
             <span className="bottom-nav__link__label">{t("Más")}</span>
           </button>

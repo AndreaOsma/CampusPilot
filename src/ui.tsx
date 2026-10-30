@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { t } from "./i18n";
+import { Check, Icon, Trash2, TriangleAlert, X } from "./vendor/icons";
 
 export type UiMode = "minimal" | "detailed";
 
@@ -81,7 +82,7 @@ export function FormStatus({ state }: { state: SubmitState }) {
     );
   return (
     <p className={`form-status form-status--${state.status}`} role={state.status === "error" ? "alert" : "status"}>
-      {state.status === "success" ? "✓ " : "⚠ "}
+      <Icon svg={state.status === "success" ? Check : TriangleAlert} />{" "}
       {state.message}
     </p>
   );
@@ -116,6 +117,7 @@ export function Card({ title, children, actions, className = "" }: { title?: Rea
 export function Loading() {
   return (
     <p className="muted loading" role="status">
+      <span className="ds-orbit" aria-hidden="true" />
       {t("Cargando…")}
     </p>
   );
@@ -124,7 +126,7 @@ export function Loading() {
 export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div className="error-box" role="alert">
-      <span>⚠ {message}</span>
+      <span><Icon svg={TriangleAlert} /> {message}</span>
       {onRetry && (
         <button type="button" className="btn btn--ghost btn--sm" onClick={onRetry}>
           {t("Reintentar")}
@@ -136,10 +138,12 @@ export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () =
 
 export function Empty({ icon, title, children }: { icon: string; title: string; children?: ReactNode }) {
   return (
-    <div className="empty-state">
-      <div className="empty-state__icon" aria-hidden>
-        {icon}
-      </div>
+    <div className="empty-state ds-empty">
+      {icon && (
+        <div className="empty-state__icon">
+          <Icon svg={icon} size={40} />
+        </div>
+      )}
       <p className="empty-state__title">{title}</p>
       {children && <div className="muted">{children}</div>}
     </div>
@@ -178,7 +182,7 @@ export function Modal({ open, title, onClose, children }: { open: boolean; title
       <div className="modal__head">
         <h2>{title}</h2>
         <button type="button" className="icon-btn" onClick={onClose} aria-label={t("Cerrar")}>
-          ✕
+          <Icon svg={X} />
         </button>
       </div>
       {open && <div className="modal__body">{children}</div>}
@@ -199,7 +203,7 @@ export function ConfirmDelete({ onConfirm, label = t("Borrar") }: { onConfirm: (
       className={`btn btn--sm ${armed ? "btn--danger" : "btn--ghost"}`}
       onClick={() => (armed ? onConfirm() : setArmed(true))}
     >
-      {armed ? t("¿Seguro? Pulsa otra vez") : label}
+      {armed ? t("¿Seguro? Pulsa otra vez") : <><Icon svg={Trash2} /> {label}</>}
     </button>
   );
 }

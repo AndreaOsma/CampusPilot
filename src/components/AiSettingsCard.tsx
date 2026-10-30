@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api, type AiProvider, type AiPublic } from "../api";
 import { Card, ErrorBox, Field, FormStatus, Loading, useLoad, useSubmit } from "../ui";
 import { t } from "../i18n";
+import { Icon, Link } from "../vendor/icons";
 
 const HELP: Record<AiProvider, string> = {
   claude_code:
@@ -27,6 +28,23 @@ export function AiSettingsCard() {
   const save = useSubmit();
   const test = useSubmit();
   const removeKey = useSubmit();
+  const connect = useSubmit();
+
+  // Vuelta de OpenRouter: /ajustes?openrouter=1&code=… → se canjea por la clave y se limpia la URL.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (params.get("openrouter") !== "1" || !code) return;
+    window.history.replaceState(null, "", window.location.pathname);
+    void connect.run(() => api.ai.openrouterFinish(code), t("Conectado con OpenRouter")).then((res) => res && q.setData(res));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const startOpenRouter = async () => {
+    const callback = `${window.location.origin}/ajustes?openrouter=1`;
+    const res = await connect.run(() => api.ai.openrouterStart(callback));
+    if (res) window.location.href = res.url;
+  };
 
   useEffect(() => {
     if (!q.data) return;
@@ -70,6 +88,19 @@ export function AiSettingsCard() {
       <p className="muted small">
         {t("La usan el generador de lecciones y la clasificación de la bandeja. Cada instalación pone la suya. Al proveedor solo le llega el material que mandas a generar y los correos de la bandeja que se clasifican.")}
       </p>
+      <div className="ai-connect">
+        <p className="small">
+          <strong>{t("La forma fácil:")}</strong>{" "}
+          {t("entra con tu cuenta de OpenRouter y usa la IA que prefieras (Claude, GPT, Gemini o modelos gratuitos), sin copiar claves. Pagas tú lo que uses, directamente a OpenRouter.")}
+        </p>
+        <div className="form-actions">
+          <button type="button" className="btn btn--primary" onClick={() => void startOpenRouter()} disabled={connect.state.status === "loading"}>
+            {connect.state.status === "loading" ? t("Conectando…") : <><Icon svg={Link} /> {t("Conectar con OpenRouter")}</>}
+          </button>
+          <FormStatus state={connect.state} />
+        </div>
+        <p className="muted small">{t("¿Prefieres otro proveedor o tu propia clave? Elígelo abajo.")}</p>
+      </div>
       <form className="form" onSubmit={submit}>
         <div className="form-grid">
           <Field label={t("Proveedor")} wide>
@@ -133,7 +164,7 @@ export function AiSettingsCard() {
             {t("Guardar")}
           </button>
           <button type="button" className="btn btn--ghost" disabled={test.state.status === "loading" || !st.enabled}
-            onClick={() => void test.run(() => api.ai.test(), t("Conexión correcta ✓"))}>
+            onClick={() => void test.run(() => api.ai.test(), t("Conexión correcta"))}>
             {test.state.status === "loading" ? t("Probando…") : t("Probar conexión")}
           </button>
           <FormStatus state={save.state} />

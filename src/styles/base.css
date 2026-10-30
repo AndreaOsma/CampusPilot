@@ -1,70 +1,46 @@
-/* Campus Pilot — glass, mobile-first (base de Bitácora). Tokens en :root (claro) y .theme-dark (noche). */
+/* Campus Pilot — glass, mobile-first. Estética común del homelab (src/vendor/design-system, importado en
+   main.tsx antes que esta hoja): aquí solo se apuntan las variables propias a --ds-*. light-dark()
+   sigue a color-scheme, que fija el tema de abajo. Identidad: índigo de estudio + verde azulado. */
 :root {
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --primary: #4f46c8;
-  --primary-strong: #3d35a6;
-  --primary-ink: #ffffff;
+  --ds-accent: light-dark(#4f46c8, #9a93f2);
+  --primary: var(--ds-accent);
+  --primary-strong: light-dark(#3d35a6, #bdb8f7);
+  --primary-ink: var(--ds-on-accent);
   --accent: #0f9d8a;
-  --gradient: linear-gradient(135deg, #5b52d6 0%, #3f37ad 100%);
-  --sky: radial-gradient(1200px 600px at 10% -10%, rgba(91, 82, 214, 0.18), transparent 60%),
-    radial-gradient(900px 500px at 110% 10%, rgba(15, 157, 138, 0.1), transparent 60%);
-  --bg: #f1f0fb;
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-strong: rgba(255, 255, 255, 0.92);
-  --glass-border: rgba(79, 70, 200, 0.16);
-  --glass-blur: 18px;
-  --surface-soft: rgba(15, 35, 70, 0.04);
-  --border-soft: rgba(15, 35, 70, 0.12);
-  --text-main: #0f1d33;
-  --text-muted: #4b5b73;
-  --shadow-soft: 0 10px 30px rgba(15, 35, 70, 0.08);
-  --focus-ring: 0 0 0 3px rgba(79, 70, 200, 0.4);
-  --ok: #0b7a4b;
-  --warn: #9a6200;
-  --crit: #c22b2b;
-  --ok-bg: rgba(11, 122, 75, 0.1);
-  --warn-bg: rgba(237, 161, 0, 0.14);
-  --crit-bg: rgba(194, 43, 43, 0.1);
-  --radius: 16px;
+  --gradient: linear-gradient(135deg, var(--ds-accent) 0%, color-mix(in srgb, var(--ds-accent) 82%, light-dark(black, white)) 100%);
+  --sky: radial-gradient(1200px 600px at 10% -10%, var(--ds-glow), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(15, 157, 138, 0.08), transparent 60%), var(--ds-bg-gradient);
+  --bg: var(--ds-bg);
+  --glass-bg: var(--ds-panel);
+  --glass-strong: var(--ds-panel-strong);
+  --glass-border: var(--ds-border);
+  --glass-blur: var(--ds-blur);
+  --surface-soft: light-dark(rgba(15, 35, 70, 0.04), rgba(255, 255, 255, 0.05));
+  --border-soft: var(--ds-border);
+  --text-main: var(--ds-text);
+  --text-muted: var(--ds-muted);
+  --shadow-soft: var(--ds-shadow);
+  --focus-ring: var(--ds-focus-ring);
+  --ok: var(--ds-ok);
+  --warn: var(--ds-warn);
+  --crit: var(--ds-danger);
+  --ok-bg: color-mix(in srgb, var(--ds-ok) 12%, transparent);
+  --warn-bg: color-mix(in srgb, var(--ds-warn) 14%, transparent);
+  --crit-bg: color-mix(in srgb, var(--ds-danger) 12%, transparent);
+  --radius: 18px;
   color: var(--text-main);
   background: var(--bg);
-  -webkit-text-size-adjust: 100%;
 }
 
 :root[data-theme="dark"] {
-  --bg: #0d0f1f;
   color-scheme: dark;
 }
 :root[data-theme="light"] {
   color-scheme: light;
 }
 
-.app-shell.theme-dark {
-  --primary: #9a93f2;
-  --primary-strong: #bdb8f7;
-  --primary-ink: #0d0f1f;
-  --bg: #0d0f1f;
-  --sky: radial-gradient(1200px 600px at 10% -10%, rgba(110, 100, 230, 0.2), transparent 60%),
-    radial-gradient(900px 500px at 110% 10%, rgba(15, 157, 138, 0.08), transparent 60%);
-  --glass-bg: rgba(26, 26, 52, 0.62);
-  --glass-strong: rgba(20, 20, 42, 0.96);
-  --glass-border: rgba(170, 164, 245, 0.18);
-  --surface-soft: rgba(255, 255, 255, 0.05);
-  --border-soft: rgba(255, 255, 255, 0.12);
-  --text-main: #e8eef8;
-  --text-muted: #a3b1c6;
-  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.35);
-  --focus-ring: 0 0 0 3px rgba(170, 164, 245, 0.5);
-  --ok: #4cc58f;
-  --warn: #f0b43c;
-  --crit: #ff7b7b;
-  --ok-bg: rgba(76, 197, 143, 0.14);
-  --warn-bg: rgba(240, 180, 60, 0.14);
-  --crit-bg: rgba(255, 123, 123, 0.14);
-}
-
 :root.native-shell {
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, Roboto, "Segoe UI", sans-serif;
+  --ds-font-sans: -apple-system, system-ui, BlinkMacSystemFont, Roboto, "Segoe UI", sans-serif;
 }
 
 * {
@@ -171,6 +147,13 @@ a {
   z-index: 20;
 }
 
+/* En móvil la cabecera fija es opaca: el contenido no se transparenta al hacer scroll */
+@media (max-width: 959px) {
+  .app-header {
+    background: linear-gradient(var(--glass-bg), var(--glass-bg)) var(--bg);
+  }
+}
+
 .app-header__brand {
   font-weight: 800;
   font-size: 1.15rem;
@@ -234,7 +217,7 @@ a {
   border: none;
   background: none;
   color: var(--text-muted);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-decoration: none;
   border-radius: 12px;
@@ -497,7 +480,7 @@ a {
 }
 .btn--primary {
   background: var(--gradient);
-  color: #fff;
+  color: var(--ds-on-accent);
   box-shadow: 0 6px 18px rgba(31, 111, 209, 0.3);
 }
 .btn--ghost {
@@ -672,7 +655,7 @@ input[aria-invalid="true"] {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 .segmented--sm button {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   padding: 4px 8px;
 }
 @media (max-width: 420px) {
@@ -726,7 +709,7 @@ input[aria-invalid="true"] {
 }
 .tabs button.is-active {
   background: var(--gradient);
-  color: #fff;
+  color: var(--ds-on-accent);
   border-color: transparent;
 }
 
@@ -742,7 +725,7 @@ input[aria-invalid="true"] {
 /* ---------- Tags / chips ---------- */
 .tag {
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 999px;
@@ -1404,7 +1387,7 @@ input[aria-invalid="true"] {
   color: inherit;
   cursor: pointer;
   padding: 0 0 0 4px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 .skill-cloud,
 .tag-row {
@@ -1580,7 +1563,7 @@ input[type="checkbox"].switch:checked::after {
 }
 .pill {
   display: inline-block;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 2px 9px;
   border-radius: 999px;
@@ -1602,7 +1585,7 @@ input[type="checkbox"].switch:checked::after {
   background: transparent;
   border: 1px solid var(--crit);
   color: var(--crit);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   padding: 1px 7px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1640,7 +1623,7 @@ a.subj-chip:hover {
   flex-shrink: 0;
 }
 .date-badge__wd {
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1710,7 +1693,7 @@ a.subj-chip:hover {
   margin-top: 3px;
 }
 .agenda-row__type {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1767,7 +1750,7 @@ a.subj-chip:hover {
   min-width: 0;
 }
 .hero-next__kicker {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1902,7 +1885,7 @@ details[open] > .subject-group__title::before {
   grid-column: auto;
 }
 .status-pill {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 3px 9px;
   border-radius: 999px;
@@ -2190,7 +2173,7 @@ details[open] > .subject-group__title::before {
   font-variant-numeric: tabular-nums;
 }
 .goal-ring__label span {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 .streak {
@@ -2333,7 +2316,7 @@ details[open] > .subject-group__title::before {
   border-color: var(--crit);
 }
 .lesson-card__kicker {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -2414,7 +2397,7 @@ details[open] > .subject-group__title::before {
 .choice.is-on .choice__key {
   background: var(--primary);
   border-color: var(--primary);
-  color: #fff;
+  color: var(--ds-on-accent);
 }
 .answer-field {
   display: inline-flex;
@@ -2617,6 +2600,50 @@ details[open] > .subject-group__title::before {
 .exam-results__q {
   display: flex;
   gap: 6px;
+}
+.feynman {
+  text-align: left;
+  margin: 16px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  display: grid;
+  gap: 8px;
+}
+.feynman h3,
+.feynman p {
+  margin: 0;
+}
+.feynman__form {
+  display: grid;
+  gap: 8px;
+}
+.feynman__form textarea {
+  width: 100%;
+}
+.feynman__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.feynman__result {
+  display: grid;
+  gap: 8px;
+}
+.feynman__rating {
+  font-weight: 800;
+}
+.feynman__rating--mastered {
+  color: var(--ok);
+}
+.feynman__rating--review {
+  color: var(--crit);
+}
+.feynman__gaps {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 8px;
 }
 .mastery {
   list-style: none;
@@ -2923,7 +2950,7 @@ input[type="checkbox"].switch {
   font-size: 0.85rem;
 }
 .onboarding__steps li.is-current .onboarding__n { border-color: var(--primary); color: var(--primary); }
-.onboarding__steps li.is-done .onboarding__n { background: var(--primary); border-color: var(--primary); color: #fff; }
+.onboarding__steps li.is-done .onboarding__n { background: var(--primary); border-color: var(--primary); color: var(--ds-on-accent); }
 .onboarding > .form-actions { margin-top: 12px; }
 
 /* Hoy: centro de mando */
@@ -3017,6 +3044,16 @@ input[type="checkbox"].switch {
 .theory-figure figcaption {
   text-align: center;
 }
+/* Imagen del manual: capturas y esquemas, a todo el ancho de la tarjeta (sin el fondo blanco del SVG). */
+.theory-figure--manual a {
+  display: block;
+  width: 100%;
+  border-radius: 10px;
+}
+.theory-figure--manual img {
+  max-width: 100%;
+  background: none;
+}
 
 /* Escala con letras: selector junto a la nota de cada actividad. */
 .activity:has(.activity__letter) {
@@ -3098,3 +3135,63 @@ input[type="checkbox"].switch {
 .week-timeline .is-past {
   opacity: 0.6;
 }
+
+/* ── UX táctil (2026-10-17): Apple HIG 44 pt e iOS sin zoom (campos ≥16 px), solo en móvil y
+   pantallas táctiles; con ratón se mantiene la densidad de escritorio. ── */
+@media (max-width: 768px), (pointer: coarse) {
+  .appearance-toggle__trigger, .appearance-toggle__btn, .density-toggle__trigger { min-width: 44px; min-height: 44px; }
+  .segmented > button, .segmented__options > button, .tabs > button { min-height: 44px; padding-inline: 14px; }
+  .weekday-picker button, .chip-btn { min-height: 44px; min-width: 44px; }
+  input[type="checkbox"], input[type="radio"] { width: 24px; height: 24px; }
+  .btn, .btn--sm, .btn--ghost, .pill, .chip, .link-btn { min-height: 44px; }
+  .app-header__brand, .skip-link { min-height: 44px; display: inline-flex; align-items: center; }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]), select, textarea { font-size: 16px; min-height: 44px; }
+  .subj-chip, .today-plan__link { min-height: 44px; display: inline-flex; align-items: center; }
+}
+
+/* UX táctil (2026-10-17, 2ª pasada) */
+@media (max-width: 768px), (pointer: coarse) {
+  .chip-link { min-height: 44px; display: inline-flex; align-items: center; }
+}
+
+/* Pantallas muy estrechas (≤360 px): solo el icono de la marca, el nombre queda para lectores de pantalla */
+@media (max-width: 360px) {
+  .app-header__brand {
+    min-width: 44px;
+    justify-content: center;
+  }
+  .app-header__name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+/* Días de la semana: envuelven en vez de desbordar a 320 px (con 44 px no caben 7 en una fila) */
+.weekday-picker { flex-wrap: wrap; }
+/* Módulos: toda la fila activa la casilla (la etiqueta cubre la fila con un área invisible) */
+.feature { position: relative; min-height: 44px; }
+.feature__name::after { content: ""; position: absolute; inset: 0; }
+.feature input[type="checkbox"] { position: relative; z-index: 1; }
+
+/* Recursos de aprendizaje por unidad */
+.resources-unit + .resources-unit { margin-top: var(--ds-space-4, 1rem); }
+.resources-unit__title { font-size: 1rem; margin: 0.75rem 0 0.25rem; }
+.resource__main { min-width: 0; flex: 1; }
+.resource__video { margin-top: 0.5rem; }
+.resource__video summary { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; }
+.resource__video video { display: block; width: 100%; max-width: 100%; border-radius: 12px; margin-top: 0.5rem; background: #000; }
+.resource__move { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+.resource__move input, .resource__move select { flex: 1; min-width: 10rem; }
+
+/* Ajustes → IA: conectar con OpenRouter */
+.ai-connect { border: 1px solid var(--ds-border, rgba(127,127,127,.25)); border-radius: 14px; padding: 0.75rem 1rem; margin: 0.75rem 0 1rem; }
+.ai-connect p { margin: 0.25rem 0; }
+
+/* Selector de tema: el menú con icono + texto y el elegido marcado (AGENTS.md → DesignUXParameters). */
+.appearance-toggle__menu { flex-direction: column; min-width: 11rem; }
+.appearance-toggle__btn { width: 100%; min-height: 44px; }
+.appearance-toggle__check { margin-left: auto; }

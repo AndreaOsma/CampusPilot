@@ -7,17 +7,25 @@ el PDF de la biblioteca: el visor de PDF del navegador puede romperse con `objec
 """
 from __future__ import annotations
 
+import os
+
+# Quién puede incrustar la app en un iframe: nadie por defecto. En el homelab el job pone
+# FRAME_ANCESTORS=https://agora.andreaosma.com para abrirla dentro de ágora.
+FRAME_ANCESTORS = os.getenv("FRAME_ANCESTORS", "").strip() or "'none'"
 CSP = (
     "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
     "font-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; "
-    "base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    "base-uri 'self'; form-action 'self'; frame-ancestors " + FRAME_ANCESTORS
 )
 COMMON = [
     (b"x-content-type-options", b"nosniff"),
     (b"referrer-policy", b"no-referrer"),
-    (b"x-frame-options", b"DENY"),
     (b"permissions-policy", b"camera=(), microphone=(), geolocation=(), payment=()"),
 ]
+# Sin FRAME_ANCESTORS: además X-Frame-Options: DENY (navegadores antiguos). Con él, solo la CSP
+# (X-Frame-Options no admite lista de orígenes y anularía el permiso a ágora).
+if FRAME_ANCESTORS == "'none'":
+    COMMON.append((b"x-frame-options", b"DENY"))
 
 
 class SecurityHeadersMiddleware:

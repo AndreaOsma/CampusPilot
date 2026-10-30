@@ -7,12 +7,13 @@ import { LibraryCard, TutorCard } from "../components/Library";
 import { WeekPlanCard } from "../components/WeekPlan";
 import { WEEKDAYS } from "../lib/format";
 import { linkTo, type Navigate } from "../router";
-import { GameBar, Mascot, PathView, play, Quests, Shop, StreakCard, type PathUnit } from "../vendor/learn-game";
+import { GameBar, Mascot, MixedReviewCard, PathView, play, Quests, Shop, StreakCard, type PathUnit } from "../vendor/learn-game";
 import { useStore } from "../store";
 import { Card, ConfirmDelete, Empty, ErrorBox, FormStatus, Loading, useLoad, useSubmit } from "../ui";
 import { t } from "../i18n";
+import { Book, BookOpenCheck, CircleCheck, Download, Flame, Icon, NotebookPen, Repeat, Target, Upload, Zap } from "../vendor/icons";
 
-const QUEST_ICON: Record<string, string> = { xp: "⚡", lessons: "📗", combo: "🔥", perfect: "🎯", correct: "✅" };
+const QUEST_ICON: Record<string, string> = { xp: Zap, lessons: BookOpenCheck, combo: Flame, perfect: Target, correct: CircleCheck };
 
 function SubjectPicker({
   options,
@@ -72,6 +73,7 @@ export function Learn({ navigate }: { navigate: Navigate }) {
   const { subjects } = useStore();
   const courses = useLoad(() => api.learn.courses());
   const gameQ = useLoad(() => api.learn.game());
+  const mixedGroups = useLoad(() => api.learn.mixedGroups());
   const [subjectId, setSubjectId] = useState<number | null>(() => {
     try {
       return Number(localStorage.getItem("campus-learn-subject")) || null;
@@ -118,7 +120,7 @@ export function Learn({ navigate }: { navigate: Navigate }) {
     if (r) {
       play("chest", sounds);
       gameQ.setData(r.game);
-      setReward(`+${r.gems} ✨`);
+      setReward(`+${r.gems} ${t("chispas")}`);
     }
   };
   const chest = async (unitId: number) => {
@@ -126,7 +128,7 @@ export function Learn({ navigate }: { navigate: Navigate }) {
     if (r) {
       play("chest", sounds);
       gameQ.setData(r.game);
-      setReward(t("🎓 ¡Insignia de unidad! +{0} ✨", { 0: r.gems }));
+      setReward(t("¡Insignia de unidad! +{0} chispas", { 0: r.gems }));
       void course.reload();
     }
   };
@@ -135,7 +137,7 @@ export function Learn({ navigate }: { navigate: Navigate }) {
     if (g) {
       play("chest", sounds);
       gameQ.setData(g);
-      setReward(t("🌴 Día libre guardado"));
+      setReward(t("Día libre guardado"));
     }
   };
   const onImport = async (file: File | undefined) => {
@@ -226,7 +228,7 @@ export function Learn({ navigate }: { navigate: Navigate }) {
                   const has = c.units?.flatMap((u) => u.lessons).find((x) => x.id === l.id)?.has_theory;
                   return (
                     <button type="button" className="btn btn--ghost btn--sm dpop__guide" onClick={() => setGuide(Number(l.id))}>
-                      {t("📘 Guía")}
+                      <Icon svg={Book} /> {t("Guía")}
                       {has ? "" : t(" (vacía)")}
                     </button>
                   );
@@ -238,18 +240,26 @@ export function Learn({ navigate }: { navigate: Navigate }) {
 
         <aside className="learn-side">
           {game && <StreakCard game={game} weekdays={WEEKDAYS} tx={t} />}
+          {mixedGroups.data && (
+            <MixedReviewCard
+              groups={mixedGroups.data}
+              storageKey="campus-pilot:mixed-off"
+              tx={t}
+              onStart={(ids) => navigate({ name: "mixed", courses: ids.length === mixedGroups.data!.filter((g) => g.count).length ? [] : ids })}
+            />
+          )}
           {game && <Quests game={game} icons={QUEST_ICON} tx={t} onClaim={(id) => void claim(id)} />}
           {c && (
             <Card title={t("Practicar")}>
               <div className="practice-grid">
                 <a className="practice-btn" href="/aprender/repaso" onClick={linkTo(navigate, { name: "review" })}>
-                  <span aria-hidden>🔁</span> {t("Repasar fallos")}
+                  <span aria-hidden><Icon svg={Repeat} /></span> {t("Repasar fallos")}
                 </a>
                 <a className="practice-btn" href={`/aprender/practica/${c.id}`} onClick={linkTo(navigate, { name: "practice", courseId: c.id, concept: "" })}>
-                  <span aria-hidden>🎯</span> {t("Lo más flojo")}
+                  <span aria-hidden><Icon svg={Target} /></span> {t("Lo más flojo")}
                 </a>
                 <a className="practice-btn" href={`/aprender/examen/${c.id}`} onClick={linkTo(navigate, { name: "exam", courseId: c.id })}>
-                  <span aria-hidden>📝</span> {t("Examen")}
+                  <span aria-hidden><Icon svg={NotebookPen} /></span> {t("Examen")}
                 </a>
               </div>
             </Card>
@@ -272,19 +282,19 @@ export function Learn({ navigate }: { navigate: Navigate }) {
             {c && (
               <>
                 <a className="btn btn--ghost btn--sm" href={api.learn.exportUrl(c.id)} download={`${c.slug}.json`}>
-                  {t("⬇ Exportar")}
+                  <Icon svg={Download} /> {t("Exportar")}
                 </a>
                 <a className="btn btn--ghost btn--sm" href={api.learn.ankiUrl(c.id)} download>
-                  {t("⬇ Anki")}
+                  <Icon svg={Download} /> {t("Anki")}
                 </a>
                 <a className="btn btn--ghost btn--sm" href={api.learn.ankiUrl(c.id, true)} download>
-                  {t("⬇ Anki (solo fallos)")}
+                  <Icon svg={Download} /> {t("Anki (solo fallos)")}
                 </a>
                 <ConfirmDelete label={t("Borrar sus lecciones y progreso")} onConfirm={() => void api.learn.removeCourse(c.id).then(() => courses.reload())} />
               </>
             )}
             <label className="btn btn--ghost btn--sm file-btn">
-              {t("⬆ Añadir lecciones (.json)")}
+              <Icon svg={Upload} /> {t("Añadir lecciones (.json)")}
               <input type="file" accept="application/json,.json" className="sr-only" onChange={(e) => void onImport(e.target.files?.[0])} />
             </label>
           </div>

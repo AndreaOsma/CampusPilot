@@ -6,6 +6,7 @@ import { rulesOf } from "../lib/rules";
 import { useStore } from "../store";
 import { Card, ConfirmDelete, Empty, ErrorBox, Loading, Modal, PageHeader, useLoad, useUiMode } from "../ui";
 import { t } from "../i18n";
+import { Check, ClipboardList, Euro, Icon, Receipt, X } from "../vendor/icons";
 
 const opts = (rec: Record<string, string>): Array<[string, string]> => Object.entries(rec);
 
@@ -116,7 +117,7 @@ export function Money() {
         ) : procedures.error ? (
           <ErrorBox message={procedures.error} onRetry={procedures.reload} />
         ) : openProcedures.length === 0 ? (
-          <Empty icon="📋" title={t("Sin trámites pendientes")} />
+          <Empty icon={ClipboardList} title={t("Sin trámites pendientes")} />
         ) : (
           <ul className="row-list">
             {openProcedures.map((p) => (
@@ -160,7 +161,7 @@ export function Money() {
 
       <Card title={t("Becas y ayudas")} actions={<button type="button" className="btn btn--ghost btn--sm" onClick={() => setModal("grant")}>{t("+ Beca")}</button>}>
         {(grants.data ?? []).length === 0 ? (
-          <Empty icon="💶" title={t("Sin becas apuntadas")} />
+          <Empty icon={Euro} title={t("Sin becas apuntadas")} />
         ) : (
           <ul className="row-list">
             {(grants.data ?? []).map((g) => {
@@ -178,8 +179,8 @@ export function Money() {
                       {g.min_average !== null && (
                         <span className={meets === false ? " text-crit" : meets ? " text-ok" : ""}>
                           {" "}{t("· media mínima")} {fmtGrade(g.min_average)}
-                          {meets === true && " ✓"}
-                          {meets === false && t(" ✗ (tienes {0})", { 0: fmtGrade(eligibility.data?.average) })}
+                          {meets === true && <> <Icon svg={Check} label={t("La cumples")} /></>}
+                          {meets === false && <> <Icon svg={X} label={t("No la cumples")} />{t(" (tienes {0})", { 0: fmtGrade(eligibility.data?.average) })}</>}
                         </span>
                       )}
                     </div>
@@ -193,7 +194,7 @@ export function Money() {
 
       <Card title={t("Gastos")}>
         {(expenses.data ?? []).length === 0 ? (
-          <Empty icon="🧾" title={t("Sin gastos")} />
+          <Empty icon={Receipt} title={t("Sin gastos")} />
         ) : (
           <div className="table-wrap">
             <table className="table">
@@ -214,7 +215,7 @@ export function Money() {
                     {mode === "detailed" && <td>{EXPENSE_CATEGORY[e.category]}</td>}
                     <td className="num">{fmtMoney(e.amount, currency)}</td>
                     <td>
-                      <ConfirmDelete label="✕" onConfirm={() => void api.expenses.remove(e.id).then(reloadAll)} />
+                      <ConfirmDelete label={t("Quitar")} onConfirm={() => void api.expenses.remove(e.id).then(reloadAll)} />
                     </td>
                   </tr>
                 ))}

@@ -5,6 +5,7 @@ import { ecLabel, offeredOptions, pfLabel, planTermOptions, rulesOf, subjectKind
 import { useStore } from "../store";
 import { Field, FormStatus, useSubmit } from "../ui";
 import { t } from "../i18n";
+import { Icon, X } from "../vendor/icons";
 
 export function emptySubject(career: Career): SubjectIn {
   const r = rulesOf(career);
@@ -235,7 +236,7 @@ export function SubjectForm({
             <input aria-label={t("Texto del enlace")} placeholder={t("Apuntes")} maxLength={80} value={l.label} onChange={(e) => setLink(i, { label: e.target.value })} />
             <input aria-label={t("URL")} placeholder={t("https://… u obsidian://…")} maxLength={500} value={l.url} onChange={(e) => setLink(i, { url: e.target.value })} />
             <button type="button" className="icon-btn" aria-label={t("Quitar enlace")} onClick={() => set("links", form.links.filter((_, j) => j !== i))}>
-              ✕
+              <Icon svg={X} />
             </button>
           </div>
         ))}

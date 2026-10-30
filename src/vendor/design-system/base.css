@@ -1,0 +1,220 @@
+/* GENERADO desde dev/lib/design-system (Homelab): no lo edites aquí, edita la librería y ejecuta su sync.mjs */
+/* Reglas globales del sistema de diseño. Va justo después de tokens.css y ANTES de la hoja de la
+   app: la app puede afinar cualquier cosa, pero lo normal es que solo apunte sus variables a --ds-*.
+   Fuentes de la guía: WCAG 2.2 AA, Apple HIG, Material 3, heurísticas de Nielsen (ver AGENTS.md). */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  /* El foco y los saltos de ancla no quedan bajo la cabecera fija (WCAG 2.4.11) */
+  scroll-padding-top: calc(env(safe-area-inset-top) + 80px);
+  scroll-padding-bottom: calc(env(safe-area-inset-bottom) + 88px);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scrollbar-color: var(--ds-border-strong) transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+html,
+body {
+  overscroll-behavior-y: none; /* el rebote de WKWebView arrastra las cabeceras sticky */
+}
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--ds-font-sans);
+  line-height: var(--ds-leading);
+  color: var(--ds-text);
+  background:
+    radial-gradient(900px 520px at 12% -10%, var(--ds-glow), transparent 70%),
+    var(--ds-bg-gradient);
+  background-color: var(--ds-bg);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+:where(h1, h2, h3) {
+  letter-spacing: var(--ds-tracking-tight);
+  line-height: var(--ds-leading-tight);
+  text-wrap: balance;
+}
+:where(p, li, dd) {
+  text-wrap: pretty;
+}
+:where(button, input, select, textarea) {
+  font: inherit;
+  color: inherit;
+}
+:where(input, select, textarea) {
+  font-size: max(16px, 1em); /* iOS no hace zoom al enfocar */
+}
+:where(button, [role="button"], summary, label[for]) {
+  cursor: pointer;
+  touch-action: manipulation; /* sin retardo de doble toque */
+}
+:where(a) {
+  text-underline-offset: 0.18em;
+}
+::selection {
+  background: color-mix(in srgb, var(--ds-accent) 30%, transparent);
+}
+:focus-visible {
+  outline: 3px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+:where(input, select, textarea):focus-visible {
+  outline-offset: 0;
+}
+[hidden] {
+  display: none !important;
+}
+
+/* Utilidades comunes */
+.ds-display {
+  font-family: var(--ds-font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.ds-glass {
+  background: var(--ds-panel);
+  border: 1px solid var(--ds-border);
+  backdrop-filter: var(--ds-glass-filter);
+  -webkit-backdrop-filter: var(--ds-glass-filter);
+}
+.ds-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Sello espacial ─────────────────────────────────────────────────────────
+   .ds-orbit: indicador de carga, un punto orbitando (decorativo: el texto «Cargando…» va al lado).
+   .ds-empty: estado vacío con una mini-constelación encima. Con prefers-reduced-motion la órbita se para. */
+.ds-orbit {
+  display: inline-block;
+  position: relative;
+  width: 1.25em;
+  height: 1.25em;
+  margin-right: 0.5em;
+  vertical-align: -0.25em;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 40%, transparent);
+  animation: ds-orbit 1.6s linear infinite;
+}
+.ds-orbit::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: calc(50% - 3px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ds-accent);
+  box-shadow: 0 0 8px var(--ds-accent);
+}
+@keyframes ds-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ds-empty::before {
+  content: "";
+  display: block;
+  width: 96px;
+  height: 40px;
+  margin: 0 auto 8px;
+  opacity: 0.7;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 40'%3E%3Cg stroke='%236aa9ff' stroke-opacity='.45' stroke-width='1'%3E%3Cline x1='8' y1='30' x2='34' y2='12'/%3E%3Cline x1='34' y1='12' x2='58' y2='22'/%3E%3Cline x1='58' y1='22' x2='88' y2='8'/%3E%3C/g%3E%3Cg fill='%236aa9ff'%3E%3Ccircle cx='8' cy='30' r='2'/%3E%3Ccircle cx='34' cy='12' r='2.5'/%3E%3Ccircle cx='58' cy='22' r='3.2'/%3E%3Ccircle cx='88' cy='8' r='2'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* «Saltar al contenido»: invisible hasta recibir foco, aunque la app le dé min-height de 44 px
+   (con top: -40px asomaba por arriba). Al enfocarlo vuelven a mandar los estilos de la app. */
+.skip-link:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Preferencias del sistema */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (prefers-contrast: more) {
+  :root {
+    --ds-border: var(--ds-border-strong);
+    --ds-muted: var(--ds-text);
+    --ds-panel: var(--ds-panel-strong);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --ds-panel: var(--ds-panel-strong);
+    --ds-blur: 0px;
+  }
+}
+@media (forced-colors: active) {
+  .ds-glass {
+    border-color: CanvasText;
+  }
+  :focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+/* ── Que se sienta app nativa en el móvil (Andrea, 2026-10-29) ─────────────────────────────────
+   Sin zoom en el móvil, en ninguna app ni en Safari (decisión de Andrea: «así es más mobile like»):
+   aquí sin pellizcar en pantallas táctiles, y native-web.mjs añade maximum-scale=1 al viewport y
+   /no-zoom.js, que corta los gestos de pellizco que Safari ignora en CSS. Desde la pantalla de inicio,
+   además, pantalla completa y sin rebote. */
+html {
+  touch-action: manipulation; /* sin zoom por doble toque en ninguna parte */
+}
+html,
+body {
+  overflow-x: clip; /* nada se arrastra de lado como una web */
+}
+@media (pointer: coarse) {
+  html {
+    touch-action: pan-x pan-y; /* sin pellizcar para ampliar: como una app */
+  }
+  /* La interfaz no se selecciona ni abre «Copiar / Buscar» al mantener pulsado; el contenido sí. */
+  :where(button, [role="button"], [role="tab"], nav, summary, label, header) {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  :where(button, nav, header) :where(img, svg) {
+    -webkit-user-drag: none;
+  }
+}
+@media (display-mode: standalone) {
+  html,
+  body {
+    overscroll-behavior: none; /* sin el rebote de goma en ninguna dirección */
+  }
+}
+/* iPhone/iPad: la letra del sistema (San Francisco), como las apps de Apple. */
+@supports (-webkit-touch-callout: none) {
+  :root {
+    --ds-font-sans: -apple-system, system-ui, "SF Pro Text", "Helvetica Neue", sans-serif;
+  }
+}

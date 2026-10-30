@@ -2,6 +2,7 @@ import { useState } from "react";
 import { numOrNull } from "../lib/format";
 import { Field, FormStatus, useSubmit } from "../ui";
 import { t } from "../i18n";
+import { Icon, X } from "../vendor/icons";
 
 export type FieldDef<T> =
   | { key: keyof T & string; label: string; type: "text" | "url" | "textarea"; required?: boolean; max?: number; wide?: boolean; hint?: string; placeholder?: string }
@@ -93,7 +94,7 @@ export function AutoForm<T extends Record<string, unknown>>({
                           <span key={tag} className="tag">
                             {tag}
                             <button type="button" className="tag__x" aria-label={t("Quitar {0}", { 0: tag })} onClick={() => set(f.key, tags.filter((x) => x !== tag))}>
-                              ✕
+                              <Icon svg={X} />
                             </button>
                           </span>
                         ))}

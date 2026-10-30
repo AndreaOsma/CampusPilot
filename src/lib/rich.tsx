@@ -1,5 +1,6 @@
 import { Fragment, type ReactNode } from "react";
 import { MathText } from "./math";
+import { t } from "../i18n";
 
 /** **negrita** y $fórmulas$ dentro de una línea. Todo el texto lo pinta React (escapado). */
 function inline(text: string): ReactNode[] {
@@ -64,6 +65,19 @@ export function RichText({ text, className = "" }: { text: string; className?: s
 /** Variante en línea (sin bloques): para opciones, pasos a ordenar y soluciones. */
 export function InlineRich({ text }: { text: string }) {
   return <>{inline(text)}</>;
+}
+
+/** Imagen sacada del manual (captura, esquema…). Al tocarla se abre a tamaño completo: en el
+ *  móvil la app no deja ampliar con los dedos. */
+export function TheoryImage({ src, alt, caption }: { src: string; alt: string; caption?: string }) {
+  return (
+    <figure className="theory-figure theory-figure--manual">
+      <a href={src} target="_blank" rel="noreferrer" aria-label={t("Ver la imagen a tamaño completo: {0}", { 0: alt })}>
+        <img src={src} alt={alt} loading="lazy" />
+      </a>
+      {caption && <figcaption className="small muted">{caption}</figcaption>}
+    </figure>
+  );
 }
 
 /** Figura de la teoría (SVG generado por la IA y saneado en el servidor). Va como <img>: así
